@@ -16,10 +16,10 @@ function BioUpload({ uid }: { uid: string }) {
       if (typeof text === "string") {
         try {
           await setDoc(doc(db, "users", uid), { documentText: text });
-          setStatus("✅ Biography submitted successfully!");
+          setStatus(" Biography submitted successfully!");
         } catch (error) {
           console.error("Error writing document:", error);
-          setStatus("❌ Error submitting biography.");
+          setStatus(" Error submitting biography.");
         }
       }
     };
