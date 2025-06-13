@@ -33,6 +33,12 @@ export default function SidePanel({ isSidePanelOpen }: SidePanelProps) {
                     </li>
                     <li className="mb-6"></li>
                     <li>
+                        <Link href="/resume-builder" className="hover:underline">
+                            Resume Builder
+                        </Link>
+                    </li>
+                    <li className="mb-6"></li>
+                    <li>
                         <Link href="/recentActivity" className="hover:underline">
                             Recent Activity
                         </Link>
