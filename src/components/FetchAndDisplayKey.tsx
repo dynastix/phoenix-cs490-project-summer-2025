@@ -137,9 +137,12 @@ const FetchAndDisplayKey: React.FC<Props> = ({ keyPath }) => {
         const data = docSnap.data();
         const jsonString: string = data.groqResponse;
         let jsonObject;
+
         try {
-          jsonObject = JSON.parse(jsonString);
+          console.log("Raw groqResponse from Firestore:", jsonString);
+          jsonObject = typeof jsonString === "string" ? JSON.parse(jsonString) : jsonString;
         } catch (err) {
+          console.error("JSON.parse failed:", err, jsonString);
           setError('Invalid JSON string');
           setLoading(false);
           return;
@@ -628,50 +631,50 @@ const FetchAndDisplayKey: React.FC<Props> = ({ keyPath }) => {
             )}
           </div>
 
-        {/* Buttons for edit, delete, add item */}
-{!(keyPath === 'education' || keyPath === 'skills') && (
-  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-    <button
-      onClick={startEditing}
-      style={{
-        padding: '0.5rem 1rem',
-        backgroundColor: '#007bff',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }}
-    >
-      Edit
-    </button>
-    <button
-      onClick={deleteSection}
-      style={{
-        padding: '0.5rem 1rem',
-        backgroundColor: '#dc3545',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }}
-    >
-      Delete
-    </button>
-    <button
-      onClick={() => setAdding(true)}
-      style={{
-        padding: '0.5rem 1rem',
-        backgroundColor: '#28a745',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }}
-    >
-      Add Item
-    </button>
-  </div>
-)}
+          {/* Buttons for edit, delete, add item */}
+          {!(keyPath === 'education' || keyPath === 'skills') && (
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              <button
+                onClick={startEditing}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={deleteSection}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setAdding(true)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Add Item
+              </button>
+            </div>
+          )}
 
           {/* Add New Item */}
           {adding && (

@@ -23,7 +23,7 @@
     "@shadcn/ui": "^0.0.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "firebase": "^11.9.0",
+    "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
     "groq-sdk": "^0.25.0",
     "identity-obj-proxy": "^3.0.0",
