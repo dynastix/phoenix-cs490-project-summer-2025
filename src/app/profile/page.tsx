@@ -8,8 +8,7 @@ import { UserNameAddUpdate } from '@/components/userNameAddUpdate';
 import Spinner, { spinnerStyles } from '../../components/ui/Spinner';
 import GroqProcessor from "../../components/GroqProcessor";
 import ProfileCard from "../../components/ProfileCard";
-import UploadedItemList from "@/components/UploadedItemList";
-import UploadPreview from "@/components/UploadPreview";
+
 
 
 
@@ -44,7 +43,7 @@ export default function HomePage() {
 
               {/* <ProfileCard /> */}
               <ProfileCard deduplicateSkills={deduplicateSkills} />
-              <UploadPreview />
+
             </Card> 
         </div>
     );
