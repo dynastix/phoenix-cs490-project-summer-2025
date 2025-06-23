@@ -9,6 +9,8 @@ interface UploadedItem {
   name: string;
   userId: string;
   createdAt: Date;
+  type: string;
+  content?: string;
 }
 
 export default function UploadedItemList() {
@@ -21,11 +23,20 @@ export default function UploadedItemList() {
 
       const fetchedItems = snapshot.docs.map(doc => {
         const data = doc.data();
+        const type = data.type || "file";
+        const content = data.content || "";
+        const name =
+          type === "text"
+            ? content.trim().split(/\s+/).slice(0, 3).join(" ") || "Freeform Text"
+            : data.name;
+
         return {
           id: doc.id,
-          name: data.name,
+          name,
           userId: data.userId,
           createdAt: data.createdAt?.toDate?.() || new Date(),
+          type,
+          content,
         };
       });
 
@@ -50,7 +61,8 @@ export default function UploadedItemList() {
         <ul className="space-y-2 max-h-64 overflow-y-auto border p-2 rounded-lg shadow">
           {items.map(item => (
             <li key={item.id} className="p-2 border-b">
-              <strong>{item.name}</strong><br />
+              <strong>{item.name}</strong>{" "}
+              <span className="text-xs text-blue-600">[{item.type}]</span><br />
               <span className="text-sm text-gray-500">
                 Uploaded by: {item.userId}<br />
                 On: {item.createdAt.toLocaleString()}

@@ -7,6 +7,7 @@ import { LoginForm } from "@/components/forms/loginForm";
 import { RegistrationForm } from "@/components/forms/registrationForm";
 import { ResetPasswordForm } from "@/components/forms/resetPasswordForm";
 import Image from "next/image";
+import LoadingLayout from "@/components/LoadingLayout";
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 
@@ -22,9 +23,8 @@ export default function LandingPage() {
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return <p>Loading...</p>; // Show a loading state while checking auth
-  }
+if (loading) return <LoadingLayout />;
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6">
