@@ -40,7 +40,6 @@ export default function UploadedItemList() {
         };
       });
 
-      // Sort newest first
       fetchedItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
       setItems(fetchedItems);
@@ -54,7 +53,6 @@ export default function UploadedItemList() {
 
   return (
     <div className="mt-4">
-      <h2 className="text-xl font-bold mb-2"></h2>
       {items.length === 0 ? (
         <p>No items have been uploaded yet.</p>
       ) : (
@@ -62,9 +60,13 @@ export default function UploadedItemList() {
           {items.map(item => (
             <li key={item.id} className="p-2 border-b">
               <strong>{item.name}</strong>{" "}
-              <span className="text-xs text-blue-600">[{item.type}]</span><br />
+              <span className="text-xs text-blue-600">
+                [{item.type === "text" ? "freeform" : item.type}]
+              </span>
+              <br />
               <span className="text-sm text-gray-500">
-                Uploaded by: {item.userId}<br />
+                Uploaded by: {item.userId}
+                <br />
                 On: {item.createdAt.toLocaleString()}
               </span>
             </li>

@@ -31,14 +31,13 @@ export default function UploadPreview() {
         orderBy("createdAt", "desc")
       );
       const snapshot = await getDocs(q);
-      const items = snapshot.docs.map((doc) => {
+      const items = snapshot.docs.map(doc => {
         const data = doc.data();
         const type = data.type || "file";
         const content = data.content || "";
         const name =
           type === "text"
-            ? content.trim().split(/\s+/).slice(0, 3).join(" ") ||
-              "Freeform Text"
+            ? content.trim().split(/\s+/).slice(0, 3).join(" ") || "Freeform Text"
             : data.name;
 
         return {
@@ -64,7 +63,6 @@ export default function UploadPreview() {
 
   return (
     <div className="w-full">
-      {/* Preview Section */}
       <div className="border p-3 rounded-lg shadow mb-4 max-w-md mx-auto">
         <h2 className="text-lg font-bold mb-2">Recent Uploads</h2>
 
@@ -72,20 +70,13 @@ export default function UploadPreview() {
           <p>No uploads yet.</p>
         ) : (
           <ul className="space-y-2">
-            {previewItems.map((item) => (
+            {previewItems.map(item => (
               <li key={item.id} className="border-b pb-2">
                 <strong>{item.name}</strong>{" "}
-                <span className="text-xs text-blue-600">[{item.type}]</span>
-                <br />
-                <span className="text-sm text-gray-600">
-                  Uploaded on {item.createdAt.toLocaleString()}
+                <span className="text-xs text-blue-600">
+                  [{item.type === "text" ? "freeform" : item.type}]
                 </span>
                 <br />
-                {item.type === "text" && (
-                  <p className="text-sm mt-1 whitespace-pre-wrap text-blue-800">
-                    {item.content}
-                  </p>
-                )}
                 <span className="text-sm text-gray-600">
                   Uploaded on {item.createdAt.toLocaleString()}
                 </span>
@@ -104,12 +95,8 @@ export default function UploadPreview() {
         )}
       </div>
 
-      {/* Floating Panel with full list */}
       {showPanel && (
-        <FloatingPanel
-          title="All Uploaded Files"
-          onClose={() => setShowPanel(false)}
-        >
+        <FloatingPanel title="All Uploaded Files" onClose={() => setShowPanel(false)}>
           <UploadedItemList />
         </FloatingPanel>
       )}
