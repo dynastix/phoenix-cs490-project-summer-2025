@@ -10,6 +10,8 @@ import GroqProcessor from "../../components/GroqProcessor";
 import ProfileCard from "../../components/ProfileCard";
 
 
+
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -41,9 +43,11 @@ export default function HomePage() {
 
               {/* <ProfileCard /> */}
               <ProfileCard deduplicateSkills={deduplicateSkills} />
+
             </Card> 
-            
         </div>
     );
   }
+
+
 

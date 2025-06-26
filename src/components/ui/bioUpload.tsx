@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useAuth } from "@/context/authContext";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase"; // ✅ Make sure this path is correct
 
 export default function BioUpload() {
   const [bioText, setBioText] = useState("");
@@ -8,37 +10,39 @@ export default function BioUpload() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
-  const handleSubmit = async () => {
-    if (!bioText.trim()) {
-      setStatus("Please enter your biography.");
-      return;
-    }
 
-    if (!user?.uid) {
-      setStatus("You must be signed in.");
-      return;
-    }
 
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/submitBio", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: user.uid,
-          text: bioText,
-        }),
-      });
+const handleSubmit = async () => {
+  if (!bioText.trim()) {
+    setStatus("Please enter your biography.");
+    return;
+  }
 
-      const result = await res.json();
-      setStatus(result.message);
-    } catch (err) {
-      console.error(err);
-      setStatus("Error submitting.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!user?.uid) {
+    setStatus("You must be signed in.");
+    return;
+  }
+
+  setIsSubmitting(true);
+  try {
+    await addDoc(collection(db, "uploads"), {
+      userId: user.uid,
+      name: "Freeform Text",
+      type: "text",
+      content: bioText,
+      createdAt: serverTimestamp(),
+    });
+
+    setStatus("Biography uploaded!");
+    setBioText(""); // clear textarea
+  } catch (err) {
+    console.error(err);
+    setStatus("Error submitting.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="flex flex-col gap-3">
