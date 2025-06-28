@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import LoadingLayout from "@/components/LoadingLayout";
-import AppLoader from "@/components/AppLoader";
+
 
 
 type ThemeType = "system" | "light" | "dark";
@@ -111,9 +111,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
         };
     }, [theme]);
-if (!authChecked) {
-  return <AppLoader />;
-}
+
 
 
     return (

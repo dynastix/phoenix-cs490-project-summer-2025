@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import AppLoader from "@/components/AppLoader";
+
 
 
 interface AuthContextValue {
@@ -26,10 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    // Prevent premature render
-    return <AppLoader />;
-  }
+
 
   return (
     <AuthContext.Provider value={{ user, loading: false }}>
