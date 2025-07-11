@@ -6,6 +6,9 @@ import ReorderWorkExperience from "@/components/ReorderWorkExperience";
 import FetchAndDisplayKey from "./FetchAndDisplayKey";
 import SummaryDisplay from "@/components/SummaryDisplay";
 import SummaryEditor from "@/components/SummaryEditor";
+import JobURLSubmit from "@/components/JobURLSubmit";
+import JobDescriptionsList from "@/components/JobDescriptionsList";
+import JobDescriptionUpload from "@/components/JobDescriptionUpload";
 
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -77,34 +80,25 @@ export default function GeneratorPageLayout() {
       {/* Tab Panel Container */}
       <div className="relative min-h-[300px] bg-[#2A2A2E] rounded-b-xl p-2 transition-all duration-300">
        
-        {activeTab === "jobs" && (
-          <div className="animate-fade-in space-y-6 max-w-4xl mx-auto mt-2">
+{activeTab === "jobs" && (
+  <div className="animate-fade-in max-w-6xl mx-auto mt-4 space-y-6">
+    {/* Submit Card */}
+    <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 shadow-md">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <JobDescriptionUpload />
+        <JobURLSubmit />
+      </div>
+    </div>
 
+    {/* Divider */}
+    <div className="border-t border-zinc-600" />
 
-            {/*------- Job Description Components: ----------*/}
-              <JobDescUploadAndListPrev />
-
-
-                          {/* <JobDescriptionUpload onJobAdded={handleJobAdded} />
-          
-                          <JobDescriptionsList ref={listRef} /> */}
-          {/* ---------------------- */}
-
-
-               {/* <Card className="w-full max-w shadow-lg">       
-                          <CardHeader>
-                              <CardTitle> </CardTitle>
-                          </CardHeader>      
-                          <CardContent>
-                              <CardDescription>
-                      
-                              </CardDescription>
-                          </CardContent>        
-                      </Card> */}
-
-
-          </div>
-        )}
+    {/* Job List below */}
+    <div>
+      <JobDescriptionsList />
+    </div>
+  </div>
+)}
 
 
         {activeTab === "generate" && (

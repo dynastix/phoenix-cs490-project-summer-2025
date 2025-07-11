@@ -75,7 +75,6 @@ export default function JobDescUploadAndListPrev() {
 {/* -----------Job Description Listings display UI and Upload ------------*/}
                 <JobDescriptionUpload onJobAdded={handleJobAdded} />
 
-                 <JobDescriptionsList ref={listRef} />
 {/* ---------------------------------------------- */}
 
 
