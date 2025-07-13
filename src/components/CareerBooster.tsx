@@ -7,7 +7,8 @@ import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '@/lib/firebase';
-import careerAdvicePrompt from '@/lib/prompts/careerAdvicePrompt';
+import generateNewCareerAdvicePrompt from '@/lib/prompts/generateNewCareerAdvice';
+import baseCareerAdvicePrompt from '@/lib/prompts/careerAdvice';
 import {
     LightBulbIcon,
     ChartBarIcon,
@@ -185,12 +186,21 @@ const CareerBooster = () => {
         setAiAdvice({ status: 'loading' });
 
         try {
+            const hasPreviousAdvice = currentResume.aiCareerAdvice !== null;
+            const previousAdviceText = hasPreviousAdvice
+                ? JSON.stringify(currentResume.aiCareerAdvice, null, 2)
+                : '';
+
+            const prompt = hasPreviousAdvice
+                ? generateNewCareerAdvicePrompt(currentResume.text, previousAdviceText)
+                : `${baseCareerAdvicePrompt}${currentResume.text}`;
+
             const response = await fetch('/api/groq', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     text: currentResume.text,
-                    prompt: careerAdvicePrompt,
+                    prompt,
                 }),
             });
 
@@ -204,18 +214,13 @@ const CareerBooster = () => {
             const user = auth.currentUser;
             if (!user) return;
 
-            // Save to Firestore for AI and regular documents
-            if (selectedResume.startsWith('ai:')) {
-                const resumeId = selectedResume.split(':')[1];
-                const resumeDocRef = docRef(db, 'users', user.uid, 'userAIResumes', resumeId);
-                await updateDoc(resumeDocRef, { aiCareerAdvice: parsed });
-            } else {
-                // Regular uploaded document
-                const resumeDocRef = docRef(db, 'users', user.uid, 'userDocuments', selectedResume);
-                await updateDoc(resumeDocRef, { aiCareerAdvice: parsed });
-            }
+            const docPathParts = selectedResume.startsWith('ai:')
+                ? ['userAIResumes', selectedResume.split(':')[1]]
+                : ['userDocuments', selectedResume];
 
-            // Update local state
+            const resumeDocRef = docRef(db, 'users', user.uid, ...docPathParts);
+            await updateDoc(resumeDocRef, { aiCareerAdvice: parsed });
+
             setUserDocuments(prev =>
                 prev.map(doc =>
                     doc.docPath === selectedResume
@@ -228,6 +233,7 @@ const CareerBooster = () => {
             setAiAdvice({ status: 'error', message: 'Failed to generate advice.' });
         }
     };
+
 
 
 

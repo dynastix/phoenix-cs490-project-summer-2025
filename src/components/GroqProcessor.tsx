@@ -2,7 +2,7 @@ import { auth, db } from '@/lib/firebase'; // Adjust path as needed
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { useEffect, useState } from 'react';
-import careerAdvicePrompt from '@/lib/prompts/careerAdvicePrompt';
+import careerAdvicePrompt from '@/lib/prompts/careerAdvice';
 
 interface GroqProcessorProps {}
 
