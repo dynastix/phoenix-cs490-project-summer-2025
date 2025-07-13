@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEffect } from 'react';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '@/lib/firebase';
@@ -15,6 +16,19 @@ import {
 } from '@heroicons/react/24/outline';
 
 
+interface AIResumeData {
+    id: string;
+    resumeContent: string;
+    jobTitle: string;
+    companyName: string;
+    createdAt: string;
+    docType: 'AI';
+    docPath: string;
+    fileName: string;
+}
+
+
+
 
 const CareerBooster = () => {
     const [selectedResume, setSelectedResume] = useState('');
@@ -24,6 +38,34 @@ const CareerBooster = () => {
     const [loadingDocs, setLoadingDocs] = useState(true);
 
     useEffect(() => {
+        const fetchAIResumes = async (uid: string): Promise<AIResumeData[]> => {
+            try {
+                const aiResumesRef = collection(db, 'users', uid, 'userAIResumes');
+                const q = query(aiResumesRef, orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+                const aiResumes: AIResumeData[] = [];
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    aiResumes.push({
+                        id: doc.id,
+                        resumeContent: data.resumeContent || '',
+                        jobTitle: data.jobTitle || 'Unknown Position',
+                        companyName: data.companyName || 'Unknown Company',
+                        createdAt: data.createdAt || '',
+                        docType: 'AI',
+                        docPath: `ai:${doc.id}`,
+                        fileName: `${data.jobTitle} at ${data.companyName} (AI Resume)`
+                    });
+                });
+
+                return aiResumes;
+            } catch (err) {
+                console.error('Error fetching AI resumes:', err);
+                return [];
+            }
+        };
+
         const fetchDocuments = async () => {
             try {
                 const auth = getAuth();
@@ -31,6 +73,8 @@ const CareerBooster = () => {
                 if (!user) return;
 
                 const uid = user.uid;
+
+                // Fetch uploaded resumes
                 const paths = [
                     { path: 'documentTextPdf', type: 'PDF' },
                     { path: 'documentTextDocx', type: 'DOCX' },
@@ -38,7 +82,7 @@ const CareerBooster = () => {
                     { path: 'documentTextFreeformText', type: 'Freeform Text' }
                 ];
 
-                const fetchPromises = paths.map(async ({ path, type }) => {
+                const uploadPromises = paths.map(async ({ path, type }) => {
                     const ref = doc(db, `users/${uid}/userDocuments/${path}`);
                     const snap = await getDoc(ref);
                     if (snap.exists()) {
@@ -55,15 +99,32 @@ const CareerBooster = () => {
                     return null;
                 });
 
-                const results = await Promise.all(fetchPromises);
-                const valid = results.filter((r): r is DocumentData => r !== null);
-                setUserDocuments(valid);
+                const [uploadedDocs, aiResumes] = await Promise.all([
+                    Promise.all(uploadPromises),
+                    fetchAIResumes(uid)
+                ]);
+
+                // Convert AI resumes to DocumentData type
+                const aiAsDocData: DocumentData[] = aiResumes.map(ai => ({
+                    fileName: ai.fileName,
+                    fileType: 'AI',
+                    text: ai.resumeContent,
+                    uploadedAt: ai.createdAt,
+                    docType: 'AI',
+                    docPath: ai.docPath
+                }));
+
+                const combined = [...uploadedDocs.filter(Boolean), ...aiAsDocData];
+                setUserDocuments(combined);
             } catch (err) {
-                console.error('Error fetching user documents:', err);
+                console.error('Error fetching documents:', err);
             } finally {
                 setLoadingDocs(false);
             }
         };
+
+
+
 
         fetchDocuments();
     }, []);
@@ -186,11 +247,12 @@ const CareerBooster = () => {
                     }}
                 >
                     <option value="">-- Choose a Document --</option>
-                    {userDocuments.map((doc, index) => (
+                    {userDocuments.map((doc) => (
                         <option key={doc.docPath} value={doc.docPath}>
-                            {doc.fileName} ({doc.docType})
+                            {doc.fileName} {doc.docType === 'AI' ? '(AI)' : (doc.docType)}
                         </option>
                     ))}
+
                 </select>
 
             </div>
