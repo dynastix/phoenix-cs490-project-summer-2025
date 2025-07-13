@@ -337,8 +337,7 @@ const CareerBooster = () => {
                                     </span>
                                 </div>
                                 <div
-                                    className={`mt-4 bg-zinc-900 border rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed
-    ${selectedResume ? 'border-blue-500' : 'border-zinc-700'}`}
+                                    className={`mt-4 bg-zinc-900 border rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed`}
                                 >
                                     {currentResume.text || currentResume.resumeContent}
                                 </div>
