@@ -17,6 +17,7 @@ import JobDescriptionUpload from "@/components/JobDescriptionUpload";
 
 import { useRef } from "react";
 
+import JobURLSubmit from "./JobURLSubmit";
 
 
 
@@ -73,10 +74,22 @@ export default function JobDescUploadAndListPrev() {
 
 
 {/* -----------Job Description Listings display UI and Upload ------------*/}
+
+
+<JobURLSubmit />
+
+
                 <JobDescriptionUpload onJobAdded={handleJobAdded} />
 
                  <JobDescriptionsList ref={listRef} />
 {/* ---------------------------------------------- */}
+
+
+{/* -----------Mark's component for URL job desc extraction-------------------- */}
+
+
+{/* ------------------------------------------------------------- */}
+
 
 
                     <CardDescription>

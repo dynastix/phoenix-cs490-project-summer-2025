@@ -84,24 +84,6 @@ export default function GeneratorPageLayout() {
             <JobDescUploadAndListPrev />
 
 
-            {/* <JobDescriptionUpload onJobAdded={handleJobAdded} />
-          
-                          <JobDescriptionsList ref={listRef} /> */}
-            {/* ---------------------- */}
-
-
-            {/* <Card className="w-full max-w shadow-lg">       
-                          <CardHeader>
-                              <CardTitle> </CardTitle>
-                          </CardHeader>      
-                          <CardContent>
-                              <CardDescription>
-                      
-                              </CardDescription>
-                          </CardContent>        
-                      </Card> */}
-
-
           </div>
         )}
 
@@ -118,7 +100,7 @@ export default function GeneratorPageLayout() {
         {activeTab === "jobHistory" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
 
-            {/* < GenerateCard    /> */}
+ 
             {/* Add the job application history component here: */}
 
             <JobApplicationList />
