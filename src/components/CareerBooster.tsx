@@ -136,7 +136,7 @@ const CareerBooster = () => {
 
                 const archives: any[] = [];
                 snapshot.forEach(doc => {
-                    archives.push(doc.data()); // include full document
+                    archives.push(doc.data()); // keep full structure
                 });
 
 
@@ -156,8 +156,10 @@ const CareerBooster = () => {
             setAiAdvice(currentResume?.aiCareerAdvice || null);
         } else {
             const idx = adviceHistory.length - 1 - adviceHistoryIndex;
+            const archived = adviceHistory[idx];
+            setAiAdvice(archived?.aiCareerAdvice || null);
             console.log('Showing archived advice idx:', idx, adviceHistory[idx]);
-            setAiAdvice(adviceHistory[idx] || null);
+            // setAiAdvice(adviceHistory[idx] || null);
         }
     }, [selectedResume, adviceHistoryIndex, currentResume, adviceHistory.length]);
 
@@ -405,10 +407,6 @@ const CareerBooster = () => {
                             Next &rarr;
                         </button>
 
-
-
-
-
                         <span className="text-gray-400 text-sm ml-2">
                             {adviceHistoryIndex === -1 ? (
                                 'Latest Advice'
@@ -419,6 +417,7 @@ const CareerBooster = () => {
                                         const archived = adviceHistory[adviceHistory.length - 1 - adviceHistoryIndex];
                                         const jobTitle = archived?.originalJobDescription?.jobTitle?.trim();
                                         const companyName = archived?.originalJobDescription?.companyName?.trim();
+
 
                                         return jobTitle && companyName ? (
                                             <span className="block text-gray-400 text-sm">
