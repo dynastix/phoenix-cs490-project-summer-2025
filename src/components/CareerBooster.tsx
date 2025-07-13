@@ -2,6 +2,15 @@
 
 import React, { useState } from 'react';
 import careerAdvicePrompt from '@/lib/prompts/careerAdvicePrompt';
+import {
+    LightBulbIcon,
+    ChartBarIcon,
+    AcademicCapIcon,
+    BriefcaseIcon,
+    ChatBubbleLeftIcon,
+} from '@heroicons/react/24/outline';
+
+
 
 const CareerBooster = () => {
     const [selectedResume, setSelectedResume] = useState('');
@@ -114,64 +123,94 @@ const CareerBooster = () => {
 
             {/* AI Advice Output */}
             <div className="mt-6 border-t pt-4">
-            <div className="mt-10 space-y-6">
-  <h3 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
-    🎯 Your AI-Powered Career Advice
-  </h3>
+                <div className="mt-10 space-y-6">
+                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
+                        Your AI-Powered Career Advice
+                    </h3>
 
-  {/* Resume Wording Advice */}
-  <div className="bg-gray-800 rounded-lg p-4 shadow">
-    <h4 className="text-xl font-semibold text-blue-400 mb-2 flex items-center">💡 Resume Wording Advice</h4>
-    <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
-      {aiAdvice.resumeWordingAdvice.map((tip: string, index: number) => (
-        <li key={index}>{tip}</li>
-      ))}
-    </ul>
-  </div>
+                    {aiAdvice && typeof aiAdvice === 'object' ? (
+                        <>
+                            {/* Resume Wording Advice */}
+                            <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+                                <div className="flex items-center space-x-2 mb-2">
+                                    <LightBulbIcon className="h-5 w-5 text-yellow-400" />
+                                    <h4 className="text-lg font-semibold text-white">Resume Wording Advice</h4>
+                                </div>
+                                <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                    {aiAdvice.resumeWordingAdvice.map((tip: string, index: number) => (
+                                        <li key={index}>{tip}</li>
+                                    ))}
+                                </ul>
+                            </div>
 
-  {/* Experience Enhancement Suggestions */}
-  <div className="bg-gray-800 rounded-lg p-4 shadow">
-    <h4 className="text-xl font-semibold text-green-400 mb-2 flex items-center">📈 Experience Suggestions</h4>
-    <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
-      {aiAdvice.experienceEnhancementSuggestions.map((tip: string, index: number) => (
-        <li key={index}>{tip}</li>
-      ))}
-    </ul>
-  </div>
+                            {/* Experience Enhancement Suggestions */}
+                            <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+                                <div className="flex items-center space-x-2 mb-2">
+                                    <ChartBarIcon className="h-5 w-5 text-green-400" />
+                                    <h4 className="text-lg font-semibold text-white">Experience Suggestions</h4>
+                                </div>
+                                <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                    {aiAdvice.experienceEnhancementSuggestions.map((tip: string, index: number) => (
+                                        <li key={index}>{tip}</li>
+                                    ))}
+                                </ul>
+                            </div>
 
-  {/* Next Steps */}
-  <div className="bg-gray-800 rounded-lg p-4 shadow">
-    <h4 className="text-xl font-semibold text-yellow-400 mb-4 flex items-center">🚀 Career Growth Plan</h4>
+                            {/* Next Steps */}
+                            <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <BriefcaseIcon className="h-5 w-5 text-blue-400" />
+                                    <h4 className="text-lg font-semibold text-white">Next Steps to Improve Career Prospects</h4>
+                                </div>
 
-    <div className="mb-3">
-      <h5 className="text-md font-medium text-yellow-300 mb-1">📚 Certifications or Courses</h5>
-      <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
-        {aiAdvice.nextStepsToImproveCareerProspects.certificationsOrCourses.map((item: string, idx: number) => (
-          <li key={idx}>{item}</li>
-        ))}
-      </ul>
-    </div>
+                                {/* Certifications or Courses */}
+                                <div className="mb-3">
+                                    <div className="flex items-center space-x-1 mb-1">
+                                        <AcademicCapIcon className="h-4 w-4 text-indigo-300" />
+                                        <h5 className="text-sm font-medium text-gray-100">Certifications or Courses</h5>
+                                    </div>
+                                    <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                        {aiAdvice.nextStepsToImproveCareerProspects.certificationsOrCourses.map((item: string, idx: number) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
 
-    <div className="mb-3">
-      <h5 className="text-md font-medium text-yellow-300 mb-1">🎯 Job Titles to Pursue</h5>
-      <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
-        {aiAdvice.nextStepsToImproveCareerProspects.jobTitlesToPursue.map((item: string, idx: number) => (
-          <li key={idx}>{item}</li>
-        ))}
-      </ul>
-    </div>
+                                {/* Job Titles to Pursue */}
+                                <div className="mb-3">
+                                    <div className="flex items-center space-x-1 mb-1">
+                                        <BriefcaseIcon className="h-4 w-4 text-indigo-300" />
+                                        <h5 className="text-sm font-medium text-gray-100">Job Titles to Pursue</h5>
+                                    </div>
+                                    <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                        {aiAdvice.nextStepsToImproveCareerProspects.jobTitlesToPursue.map((item: string, idx: number) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
 
-    <div>
-      <h5 className="text-md font-medium text-yellow-300 mb-1">💬 General Career Advice</h5>
-      <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
-        {aiAdvice.nextStepsToImproveCareerProspects.generalCareerAdvice.map((item: string, idx: number) => (
-          <li key={idx}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  </div>
-</div>
-
+                                {/* General Career Advice */}
+                                <div>
+                                    <div className="flex items-center space-x-1 mb-1">
+                                        <ChatBubbleLeftIcon className="h-4 w-4 text-indigo-300" />
+                                        <h5 className="text-sm font-medium text-gray-100">General Career Advice</h5>
+                                    </div>
+                                    <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                        {aiAdvice.nextStepsToImproveCareerProspects.generalCareerAdvice.map((item: string, idx: number) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <p className="italic text-gray-500">
+                            {typeof aiAdvice === 'string'
+                                ? aiAdvice
+                                : 'AI suggestions will appear here after selecting a resume and clicking the button.'}
+                        </p>
+                    )}
+                </div>
             </div>
         </div>
     );
