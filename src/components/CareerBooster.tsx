@@ -168,7 +168,16 @@ const CareerBooster = () => {
     //     }
     // };
 
-
+    const mimeTypeToLabel = (mimeType: string) => {
+        if (!mimeType) return 'Unknown';
+        if (mimeType === 'application/pdf') return 'PDF';
+        if (mimeType === 'text/plain') return 'TXT';
+        if (mimeType === 'application/msword') return 'DOC';
+        if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'DOCX';
+        // Add more mappings as needed
+        return mimeType; // fallback to raw MIME type if no mapping
+      };
+      
 
     const handleGenerateAdvice = async () => {
         if (!currentResume || !selectedResume) return;
@@ -275,7 +284,7 @@ const CareerBooster = () => {
                     <option value="">-- Choose a Document --</option>
                     {userDocuments.map((doc) => (
                         <option key={doc.docPath} value={doc.docPath}>
-                            {doc.fileName} {doc.docType === 'AI' ? '(AI)' : (doc.docType)}
+                            {doc.fileName} {doc.docType === 'AI' ? '(AI)' : mimeTypeToLabel(doc.fileType)}
                         </option>
                     ))}
 
