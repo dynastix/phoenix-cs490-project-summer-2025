@@ -176,8 +176,8 @@ const CareerBooster = () => {
         if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'DOCX';
         // Add more mappings as needed
         return mimeType; // fallback to raw MIME type if no mapping
-      };
-      
+    };
+
 
     const handleGenerateAdvice = async () => {
         if (!currentResume || !selectedResume) return;
@@ -282,11 +282,18 @@ const CareerBooster = () => {
 
                 >
                     <option value="">-- Choose a Document --</option>
-                    {userDocuments.map((doc) => (
-                        <option key={doc.docPath} value={doc.docPath}>
-                            {doc.fileName} {doc.docType === 'AI' ? '(AI)' : mimeTypeToLabel(doc.fileType)}
-                        </option>
-                    ))}
+                    {userDocuments
+                        .filter(doc =>
+                            doc.fileName && doc.fileName.toLowerCase() !== 'untitled' &&
+                            doc.fileType && doc.fileType.toLowerCase() !== 'unknown' &&
+                            doc.text && doc.text.trim().length > 0
+                        )
+                        .map(doc => (
+                            <option key={doc.docPath} value={doc.docPath}>
+                                {doc.fileName} {doc.docType === 'AI' ? '(AI)' : mimeTypeToLabel(doc.fileType)}
+                            </option>
+                        ))}
+
 
                 </select>
 
