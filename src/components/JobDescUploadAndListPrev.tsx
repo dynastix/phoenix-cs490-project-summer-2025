@@ -81,7 +81,6 @@ export default function JobDescUploadAndListPrev() {
 
                 <JobDescriptionUpload onJobAdded={handleJobAdded} />
 
-                 <JobDescriptionsList ref={listRef} />
 {/* ---------------------------------------------- */}
 
 

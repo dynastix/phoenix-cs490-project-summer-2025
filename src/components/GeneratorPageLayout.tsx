@@ -6,7 +6,10 @@ import ReorderWorkExperience from "@/components/ReorderWorkExperience";
 import FetchAndDisplayKey from "./FetchAndDisplayKey";
 import SummaryDisplay from "@/components/SummaryDisplay";
 import SummaryEditor from "@/components/SummaryEditor";
+
+
 import CareerBooster from "@/components/CareerBooster";
+
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 
@@ -64,9 +67,9 @@ export default function GeneratorPageLayout() {
       {/* Tab Panel Container */}
       <div className="relative min-h-[300px] bg-[#2A2A2E] rounded-b-xl p-2 transition-all duration-300">
 
+
         {activeTab === "jobs" && (
           <div className="animate-fade-in space-y-6 max-w-4xl mx-auto mt-2">
-
 
             {/*------- Job Description Components: ----------*/}
             <JobDescUploadAndListPrev />
@@ -74,7 +77,6 @@ export default function GeneratorPageLayout() {
 
           </div>
         )}
-
 
         {activeTab === "generate" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
