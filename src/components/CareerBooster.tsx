@@ -4,11 +4,12 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { updateDoc, doc as docRef } from 'firebase/firestore';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { doc, getDoc } from 'firebase/firestore';
+import UserJobDescriptionList from "@/components/UserJobDescriptionList";
 import { getAuth } from 'firebase/auth';
 import { db } from '@/lib/firebase';
 import generateNewCareerAdvicePrompt from '@/lib/prompts/generateNewCareerAdvice';
 import baseCareerAdvicePrompt from '@/lib/prompts/careerAdvice';
+import { formatDate } from '@/utils/formatDate';
 import {
     LightBulbIcon,
     ChartBarIcon,
@@ -29,15 +30,14 @@ interface AIResumeData {
     fileName: string;
 }
 
-
-
-
 const CareerBooster = () => {
     const [selectedResume, setSelectedResume] = useState('');
     const [aiAdvice, setAiAdvice] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
     const [userDocuments, setUserDocuments] = useState<DocumentData[]>([]);
     const [loadingDocs, setLoadingDocs] = useState(true);
+    const [selectedJobDescription, setSelectedJobDescription] = useState<JobDescription | null>(null);
+    const currentResume = userDocuments.find(doc => doc.docPath === selectedResume);
 
     useEffect(() => {
         const fetchAIResumes = async (uid: string): Promise<AIResumeData[]> => {
@@ -116,12 +116,15 @@ const CareerBooster = () => {
             }
         };
 
-
+        if (currentResume?.aiCareerAdvice) {
+            setAiAdvice(currentResume.aiCareerAdvice);
+        } else {
+            setAiAdvice(null);
+        }
 
 
         fetchDocuments();
-    }, []);
-
+    }, [selectedResume, currentResume]);
 
     // Dummy resume list with mock content
     const resumeOptions = [
@@ -129,45 +132,6 @@ const CareerBooster = () => {
         { id: 'resume2', name: 'Product Manager Resume', content: 'Experience: 4+ years\nSkills: Agile, Roadmapping, Stakeholder Management\nProjects: Mobile App Launch, SaaS Platform Design...' },
         { id: 'resume3', name: 'Data Analyst Resume', content: 'Experience: 3+ years\nSkills: SQL, Python, Tableau\nProjects: Sales Dashboards, Customer Insights Report...' },
     ];
-
-    //   const handleGenerateAdvice = () => {
-    //     // Placeholder for AI interaction logic
-    //     console.log(`Generating advice for: ${selectedResume}`);
-    //     setAiAdvice(`Here's some tailored advice based on your selected resume: ${selectedResume}`);
-    //   };
-
-    // const handleGenerateAdvice = async () => {
-    //     if (!currentResume) return;
-
-    //     setAiAdvice({ status: 'loading' });
-    //     try {
-    //         const response = await fetch('/api/groq', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({
-    //                 text: currentResume.content,
-    //                 prompt: careerAdvicePrompt,
-    //             }),
-    //         });
-
-    //         if (!response.ok) throw new Error('Groq API request failed');
-
-    //         const { response: groqText } = await response.json();
-
-    //         // Try parsing the JSON
-    //         try {
-    //             const parsed = JSON.parse(groqText);
-    //             setAiAdvice(parsed);
-    //         } catch (jsonError) {
-    //             console.warn('⚠️ JSON parsing failed:', jsonError);
-    //             setAiAdvice({ status: 'error', message: 'Invalid JSON format received from AI.' });
-
-    //         }
-    //     } catch (error) {
-    //         console.error('Error generating advice:', error);
-    //         setAiAdvice({ status: 'error', message: 'Failed to generate advice.' });
-    //     }
-    // };
 
     const mimeTypeToLabel = (mimeType: string) => {
         if (!mimeType) return 'Unknown';
@@ -238,97 +202,85 @@ const CareerBooster = () => {
 
 
     // const currentResume = resumeOptions.find((resume) => resume.id === selectedResume);
-    const currentResume = userDocuments.find(doc => doc.docPath === selectedResume);
     //   const response = await callGroqAPI(resumeText, careerAdvicePrompt);
 
     return (
-        <div className="max-w-2xl mx-auto p-6 space-y-6">
+        <div className="max-w-9xl mx-auto px-6 space-y-6">
             <h2 className="text-2xl font-semibold">Career Booster</h2>
 
-            {/* Resume Selector */}
-            <div>
-                <label htmlFor="resumeSelect" className="block text-sm font-medium text-gray-300">
-                    Select a Resume
-                </label>
-                {/* <select
-                    id="resumeSelect"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                    value={selectedResume}
-                    onChange={(e) => {
-                        setSelectedResume(e.target.value);
-                        setShowPreview(false); // reset preview on change
-                    }}
-                >
-                    <option value="">-- Choose a Resume --</option>
-                    {resumeOptions.map((resume) => (
-                        <option key={resume.id} value={resume.id}>
-                            {resume.name}
-                        </option>
-                    ))}
-                </select> */}
-                <select
-                    id="resumeSelect"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                    value={selectedResume}
-                    onChange={(e) => {
-                        const selected = e.target.value;
-                        setSelectedResume(selected);
-                        setShowPreview(false);
-
-                        const selectedDoc = userDocuments.find(doc => doc.docPath === selected);
-
-                        // Set existing AI advice if available
-                        if (selectedDoc?.aiCareerAdvice) {
-                            setAiAdvice(selectedDoc.aiCareerAdvice);
-                        } else {
-                            setAiAdvice(null);
-                        }
-                    }}
-
-
-                >
-                    <option value="">-- Choose a Document --</option>
-                    {userDocuments
-                        .filter(doc =>
-                            doc.fileName && doc.fileName.toLowerCase() !== 'untitled' &&
-                            doc.fileType && doc.fileType.toLowerCase() !== 'unknown' &&
-                            doc.text && doc.text.trim().length > 0
-                        )
-                        .map(doc => (
-                            <option key={doc.docPath} value={doc.docPath}>
-                                {doc.fileName} {doc.docType === 'AI' ? '(AI)' : mimeTypeToLabel(doc.fileType)}
-                            </option>
-                        ))}
-
-
-                </select>
-
-            </div>
-
-            {/* Actions */}
-            <div className="flex space-x-4">
-                {selectedResume && (
-                    <button
-                        onClick={handleGenerateAdvice}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            {/* Resume and Job Description Side-by-Side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                {/* Resume Selector */}
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">Select a Resume</h3>
+                    <select
+                        value={selectedResume}
+                        onChange={(e) => setSelectedResume(e.target.value)}
+                        className="w-full bg-zinc-800 text-zinc-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                        {currentResume?.aiCareerAdvice || aiAdvice
-                            ? 'Regenerate AI Advice'
-                            : 'Get AI Career Advice'}
-                    </button>
-                )}
+                        <option value="">-- Select Resume --</option>
+                        {userDocuments
+                            .filter((doc) => doc.fileName && doc.fileName !== 'Untitled')
+                            .map((doc) => (
+                                <option key={doc.docPath} value={doc.docPath}>
+                                    {doc.fileName} {doc.docType === 'AI' ? '(AI)' : ''}
+                                </option>
+                            ))}
+                    </select>
+
+                    {/* Display View - Scrollable */}
+                    {currentResume && (
+                        <div className="mt-4 bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed">
+                            <div className="flex justify-between items-center mb-4">
+                                <span className="text-sm px-3 py-1 rounded-full bg-zinc-800">
+                                    {mimeTypeToLabel(currentResume.docType) || 'Resume'}
+                                </span>
+                                <span className="text-sm text-zinc-400">
+                                    Created: {formatDate(currentResume.uploadedAt || currentResume.createdAt || '')}
+                                </span>
+                            </div>
+                            {currentResume.text || currentResume.resumeContent}
+                        </div>
+                    )}
+                    {/* Actions */}
+                    <div className="flex space-x-4" style={{ marginTop: '2rem' }}>
+                        {selectedResume && (
+                            <button
+                                onClick={handleGenerateAdvice}
+                                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            >
+                                {currentResume?.aiCareerAdvice || aiAdvice
+                                    ? 'Regenerate AI Advice'
+                                    : 'Get AI Career Advice'}
+                            </button>
+                        )}
+
+                    </div>
+                </div>
 
 
+                {/* Job Description Selector */}
+                <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Select a Job Description</h3>
+                    <div className="rounded h-[580px] overflow-y-auto">
+                        <UserJobDescriptionList
+                            selectedJob={selectedJobDescription}
+                            onSelect={setSelectedJobDescription}
+                        />
+                        {selectedJobDescription && (
+                            <div className="mt-4 p-4 border border-zinc-700 rounded bg-zinc-900">
+                                <h4 className="text-lg font-semibold text-white mb-2">
+                                    {selectedJobDescription.jobTitle} at {selectedJobDescription.companyName}
+                                </h4>
+                                <p className="text-sm text-zinc-300 whitespace-pre-wrap">
+                                    {selectedJobDescription.jobDescription}
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
-                <button
-                    onClick={() => setShowPreview((prev) => !prev)}
-                    disabled={!selectedResume}
-                    className="bg-gray-200 text-black px-4 py-2 rounded hover:bg-gray-300 disabled:opacity-50"
-                >
-                    {showPreview ? 'Hide Preview' : 'Preview Resume'}
 
-
-                </button>
+                </div>
             </div>
 
             {/* Resume Preview */}
