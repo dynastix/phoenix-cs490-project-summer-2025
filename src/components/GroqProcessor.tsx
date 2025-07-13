@@ -2,6 +2,7 @@ import { auth, db } from '@/lib/firebase'; // Adjust path as needed
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { useEffect, useState } from 'react';
+import careerAdvicePrompt from '@/lib/prompts/careerAdvicePrompt';
 
 interface GroqProcessorProps {}
 
@@ -150,7 +151,48 @@ The JSON MUST follow this exact structure:
   "skills": ["", "", "", "", "", ""]
 }
 
-RETURN ONLY THE VALID JSON OBJECT - NOTHING ELSE.`;
+RETURN ONLY THE VALID JSON OBJECT - NOTHING ELSE.
+
+When extracting emails and phone numbers, use the following JSON structure:
+
+{
+  "email": {
+    "primary": "",
+    "other": ""
+  },
+  "phone": {
+    "primary": "",
+    "other": ""
+  }
+}
+
+Rules:
+1. Only extract unique emails and phone numbers. Remove any duplicates **before assigning labels**.
+2. After removing duplicates:
+   - Place the first unique value in the "primary" field.
+   - Place the second unique value in the "other" field.
+3. If more than two unique values are found, add new fields at the same level:
+   - "Email 1", "Email 2", "Phone Number 1", etc.
+4. Do NOT nest any values inside the "other" field.
+5. The email and phone sections must be flat key-value objects.
+
+Example of correct structure with multiple entries:
+
+{
+  "email": {
+    "primary": "",
+    "other": "",
+    "Email 1": "",
+    "Email 2": ""
+  },
+  "phone": {
+    "primary": "",
+    "other": "",
+    "Phone Number 1": ""
+  }
+}
+
+`;
 
   const combinePrompt = `You are a data consolidation assistant. Your task is to combine multiple JSON objects containing resume data into a single, comprehensive JSON object.
 
@@ -202,6 +244,45 @@ Expected output structure (return only this JSON format):
 }
 
 RETURN ONLY THE COMBINED JSON OBJECT - NO OTHER TEXT WHATSOEVER.
+
+When extracting emails and phone numbers, use the following JSON structure:
+
+{
+  "email": {
+    "primary": "",
+    "other": ""
+  },
+  "phone": {
+    "primary": "",
+    "other": ""
+  }
+}
+
+Rules:
+1. Only extract unique emails and phone numbers. Remove any duplicates **before assigning labels**.
+2. After removing duplicates:
+   - Place the first unique value in the "primary" field.
+   - Place the second unique value in the "other" field.
+3. If more than two unique values are found, add new fields at the same level:
+   - "Email 1", "Email 2", "Phone Number 1", etc.
+4. Do NOT nest any values inside the "other" field.
+5. The email and phone sections must be flat key-value objects.
+
+Example of correct structure with multiple entries:
+
+{
+  "email": {
+    "primary": "",
+    "other": "",
+    "Email 1": "",
+    "Email 2": ""
+  },
+  "phone": {
+    "primary": "",
+    "other": "",
+    "Phone Number 1": ""
+  }
+}
 
 Combine the following JSON objects:`;
 
@@ -680,4 +761,79 @@ Combine the following JSON objects:`;
       </div>
     </div>
   );
+}
+
+export async function processCareerAdviceHandler({
+  user,
+  sourceDocId = 'documentText',
+  targetDocId = 'careerAdvice',
+  textField = 'text',
+  onStatus,
+}: {
+  user: User;
+  sourceDocId?: string;
+  targetDocId?: string;
+  textField?: string;
+  onStatus?: (message: string) => void;
+}) {
+  const setStatus = (msg: string) => onStatus?.(msg);
+
+  setStatus('🧠 Starting career advice generation...');
+
+  try {
+    // Step 1: Fetch resume text
+    const sourceDocRef = doc(db, 'users', user.uid, 'userDocuments', sourceDocId);
+    const sourceDoc = await getDoc(sourceDocRef);
+
+    if (!sourceDoc.exists()) {
+      const errMsg = `❌ Source document not found: ${sourceDocId}`;
+      setStatus(errMsg);
+      throw new Error(errMsg);
+    }
+
+    const textContent = sourceDoc.data()?.[textField];
+    if (!textContent) {
+      const errMsg = '❌ Text field missing in document';
+      setStatus(errMsg);
+      throw new Error(errMsg);
+    }
+
+    // Step 2: Call Groq API
+    setStatus('🤖 Calling Groq API for career advice...');
+    const response = await callGroqAPI(textContent, careerAdvicePrompt);
+
+    if (!response) {
+      const errMsg = '❌ Groq API failed to return career advice';
+      setStatus(errMsg);
+      throw new Error(errMsg);
+    }
+
+    const cleanedAdvice = cleanJSONResponse(response);
+    const validation = validateJSON(cleanedAdvice);
+
+    if (!validation.isValid) {
+      setStatus(`⚠️ JSON format issue: ${validation.error}`);
+    } else {
+      setStatus('✅ Valid JSON response for career advice');
+    }
+
+    // Step 3: Save response to Firestore
+    const targetDocRef = doc(db, 'users', user.uid, 'userDocuments', targetDocId);
+    await setDoc(targetDocRef, {
+      originalText: textContent,
+      careerAdvice: cleanedAdvice,
+      promptUsed: careerAdvicePrompt,
+      processedAt: new Date(),
+      isValidJSON: validation.isValid,
+      jsonError: validation.error ?? null,
+    });
+
+    setStatus(validation.isValid
+      ? '✅ Career advice saved successfully'
+      : '⚠️ Saved, but check JSON validity');
+  } catch (err: any) {
+    console.error('❌ Career advice processing failed:', err);
+    setStatus(`❌ Unexpected error during career advice processing`);
+    throw err;
+  }
 }

@@ -6,12 +6,6 @@ interface SidePanelProps {
     isSidePanelOpen: boolean;
 }
 
-
-
-
-
-
-
 export default function SidePanel({ isSidePanelOpen }: SidePanelProps) {
     return (
         <aside
@@ -32,17 +26,17 @@ export default function SidePanel({ isSidePanelOpen }: SidePanelProps) {
                         </Link>
                     </li>
 
-                    {/* <li className="mb-6"></li>
+                    <li className="mb-6"></li>
                     <li>
-                        <Link href="/pdf-upload" className="hover:underline">
-                            Upload PDF
+                        <Link href="/jobs" className="hover:underline">
+                            Jobs Descriptions
                         </Link>
-                    </li> */}
+                    </li>
 
                     <li className="mb-6"></li>
                     <li>
                         <Link href="/recentActivity" className="hover:underline">
-                            Recent Activity
+                            File & Text Preview
                         </Link>
                     </li>
                     <li className="mb-6"></li>
