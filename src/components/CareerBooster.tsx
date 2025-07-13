@@ -113,7 +113,8 @@ const CareerBooster = () => {
                     text: ai.resumeContent,
                     uploadedAt: ai.createdAt,
                     docType: 'AI',
-                    docPath: ai.docPath
+                    docPath: ai.docPath,
+                    aiCareerAdvice: ai.aiCareerAdvice || null
                 }));
 
                 const combined = [...uploadedDocs.filter(Boolean), ...aiAsDocData];
@@ -271,12 +272,15 @@ const CareerBooster = () => {
                         setShowPreview(false);
 
                         const selectedDoc = userDocuments.find(doc => doc.docPath === selected);
+
+                        // Set existing AI advice if available
                         if (selectedDoc?.aiCareerAdvice) {
                             setAiAdvice(selectedDoc.aiCareerAdvice);
                         } else {
                             setAiAdvice(null);
                         }
                     }}
+
 
                 >
                     <option value="">-- Choose a Document --</option>
@@ -294,11 +298,12 @@ const CareerBooster = () => {
             <div className="flex space-x-4">
                 <button
                     onClick={handleGenerateAdvice}
-                    disabled={!selectedResume || !!currentResume?.aiCareerAdvice}
+                    disabled={!selectedResume || !!(currentResume?.aiCareerAdvice || aiAdvice)}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                     Get AI Career Advice
                 </button>
+
 
                 <button
                     onClick={() => setShowPreview((prev) => !prev)}
