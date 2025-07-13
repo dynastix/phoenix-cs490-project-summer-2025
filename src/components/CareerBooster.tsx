@@ -76,37 +76,26 @@ const CareerBooster = () => {
 
                 const uid = user.uid;
 
-                // Fetch uploaded resumes
-                const paths = [
-                    { path: 'documentTextPdf', type: 'PDF' },
-                    { path: 'documentTextDocx', type: 'DOCX' },
-                    { path: 'documentTextTxt', type: 'TXT' },
-                    { path: 'documentTextFreeformText', type: 'Freeform Text' }
-                ];
+                // Fetch uploaded documents dynamically
+                const userDocsRef = collection(db, 'users', uid, 'userDocuments');
+                const userDocsSnapshot = await getDocs(userDocsRef);
+                const uploadedDocs: DocumentData[] = [];
 
-                const uploadPromises = paths.map(async ({ path, type }) => {
-                    const ref = doc(db, `users/${uid}/userDocuments/${path}`);
-                    const snap = await getDoc(ref);
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        return {
-                            fileName: data.fileName || 'Untitled',
-                            fileType: data.fileType || type,
-                            text: data.text || '',
-                            uploadedAt: data.uploadedAt || null,
-                            docType: type,
-                            docPath: path
-                        } as DocumentData;
-                    }
-                    return null;
+                userDocsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    uploadedDocs.push({
+                        fileName: data.fileName || 'Untitled',
+                        fileType: data.fileType || 'Unknown',
+                        text: data.text || '',
+                        uploadedAt: data.uploadedAt || null,
+                        docType: data.docType || 'Unknown',
+                        docPath: doc.id,
+                        aiCareerAdvice: data.aiCareerAdvice || null,
+                    });
                 });
 
-                const [uploadedDocs, aiResumes] = await Promise.all([
-                    Promise.all(uploadPromises),
-                    fetchAIResumes(uid)
-                ]);
+                const aiResumes = await fetchAIResumes(uid);
 
-                // Convert AI resumes to DocumentData type
                 const aiAsDocData: DocumentData[] = aiResumes.map(ai => ({
                     fileName: ai.fileName,
                     fileType: 'AI',
@@ -117,7 +106,7 @@ const CareerBooster = () => {
                     aiCareerAdvice: ai.aiCareerAdvice || null
                 }));
 
-                const combined = [...uploadedDocs.filter(Boolean), ...aiAsDocData];
+                const combined = [...uploadedDocs, ...aiAsDocData];
                 setUserDocuments(combined);
             } catch (err) {
                 console.error('Error fetching documents:', err);
@@ -199,25 +188,25 @@ const CareerBooster = () => {
             if (!response.ok) throw new Error('Groq API request failed');
 
             const { response: groqText } = await response.json();
-
             const parsed = JSON.parse(groqText);
             setAiAdvice(parsed);
 
-            // Save to Firestore if it's an AI resume
-            if (selectedResume.startsWith('ai:')) {
-                const auth = getAuth();
-                const user = auth.currentUser;
-                if (!user) return;
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (!user) return;
 
+            // Save to Firestore for AI and regular documents
+            if (selectedResume.startsWith('ai:')) {
                 const resumeId = selectedResume.split(':')[1];
                 const resumeDocRef = docRef(db, 'users', user.uid, 'userAIResumes', resumeId);
-
-                await updateDoc(resumeDocRef, {
-                    aiCareerAdvice: parsed
-                });
+                await updateDoc(resumeDocRef, { aiCareerAdvice: parsed });
+            } else {
+                // Regular uploaded document
+                const resumeDocRef = docRef(db, 'users', user.uid, 'userDocuments', selectedResume);
+                await updateDoc(resumeDocRef, { aiCareerAdvice: parsed });
             }
 
-            // Update local state so UI disables button
+            // Update local state
             setUserDocuments(prev =>
                 prev.map(doc =>
                     doc.docPath === selectedResume
