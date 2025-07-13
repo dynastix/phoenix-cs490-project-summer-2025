@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { updateDoc, doc as docRef } from 'firebase/firestore';
+import { updateDoc, doc as docRef, where } from 'firebase/firestore';
 import { collection, query, orderBy, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import UserJobDescriptionList from "@/components/UserJobDescriptionList";
 import { getAuth } from 'firebase/auth';
@@ -38,8 +38,13 @@ const CareerBooster = () => {
     const [loadingDocs, setLoadingDocs] = useState(true);
     const [selectedJobDescription, setSelectedJobDescription] = useState<JobDescription | null>(null);
     const currentResume = userDocuments.find(doc => doc.docPath === selectedResume);
+    const [adviceHistory, setAdviceHistory] = useState<any[]>([]);
+    const [adviceHistoryIndex, setAdviceHistoryIndex] = useState<number>(-1);
+
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchAIResumes = async (uid: string): Promise<AIResumeData[]> => {
             try {
                 const aiResumesRef = collection(db, 'users', uid, 'userAIResumes');
@@ -73,7 +78,13 @@ const CareerBooster = () => {
             try {
                 const auth = getAuth();
                 const user = auth.currentUser;
-                if (!user) return;
+                if (!user) {
+                    if (isMounted) {
+                        setUserDocuments([]);
+                        setLoadingDocs(false);
+                    }
+                    return;
+                }
 
                 const uid = user.uid;
 
@@ -108,23 +119,34 @@ const CareerBooster = () => {
                 }));
 
                 const combined = [...uploadedDocs, ...aiAsDocData];
-                setUserDocuments(combined);
+
+                if (isMounted) {
+                    setUserDocuments(combined);
+                    setLoadingDocs(false);
+                }
             } catch (err) {
                 console.error('Error fetching documents:', err);
-            } finally {
-                setLoadingDocs(false);
+                if (isMounted) {
+                    setUserDocuments([]);
+                    setLoadingDocs(false);
+                }
             }
         };
 
+        // Set AI advice from currentResume if available
         if (currentResume?.aiCareerAdvice) {
             setAiAdvice(currentResume.aiCareerAdvice);
         } else {
             setAiAdvice(null);
         }
 
-
         fetchDocuments();
+
+        return () => {
+            isMounted = false; // Cleanup flag for async operations
+        };
     }, [selectedResume, currentResume]);
+
 
     // Dummy resume list with mock content
     const resumeOptions = [
@@ -239,9 +261,14 @@ const CareerBooster = () => {
                         {userDocuments
                             .filter((doc) => doc.fileName && doc.fileName !== 'Untitled')
                             .map((doc) => (
-                                <option key={doc.docPath} value={doc.docPath}>
+                                <option
+                                    key={doc.docPath}
+                                    value={doc.docPath}
+                                    className={doc.docPath === selectedResume ? 'bg-blue-700 text-white' : ''}
+                                >
                                     {doc.fileName} {doc.docType === 'AI' ? '(AI)' : ''}
                                 </option>
+
                             ))}
                     </select>
 
@@ -256,7 +283,13 @@ const CareerBooster = () => {
                                     Created: {formatDate(currentResume.uploadedAt || currentResume.createdAt || '')}
                                 </span>
                             </div>
-                            {currentResume.text || currentResume.resumeContent}
+                            <div
+                                className={`mt-4 bg-zinc-900 border rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed
+    ${selectedResume ? 'border-blue-500' : 'border-zinc-700'}`}
+                            >
+                                {currentResume.text || currentResume.resumeContent}
+                            </div>
+
                         </div>
                     )}
                     {/* Actions */}
@@ -300,20 +333,6 @@ const CareerBooster = () => {
                 </div>
             </div>
 
-            {/* Resume Preview */}
-            {showPreview && currentResume && (
-                <div className="mt-4 p-4 border border-gray-300 rounded bg-gray-50">
-                    <h3 className="text-lg font-medium mb-2">Document Preview</h3>
-                    <pre className="whitespace-pre-wrap text-sm text-gray-800">
-                        {currentResume.text}
-                    </pre>
-                </div>
-            )}
-            {loadingDocs ? (
-                <p className="text-gray-400 italic">Loading your documents...</p>
-            ) : userDocuments.length === 0 ? (
-                <p className="text-gray-400 italic">No documents uploaded yet.</p>
-            ) : null}
 
             {/* AI Advice Output */}
             <div className="mt-6 border-t pt-4">
@@ -321,6 +340,30 @@ const CareerBooster = () => {
                     <h3 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
                         Your AI-Powered Career Advice
                     </h3>
+                    <div className="flex items-center space-x-4 mb-4">
+                        <button
+                            disabled={adviceHistoryIndex === -1}
+                            onClick={() => setAdviceHistoryIndex(prev => (prev > -1 ? prev - 1 : prev))}
+                            className={`px-3 py-1 rounded ${adviceHistoryIndex === -1 ? 'opacity-50 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'}`}
+                            aria-label="Previous Advice"
+                        >
+                            &larr; Previous
+                        </button>
+                        <button
+                            disabled={adviceHistoryIndex >= adviceHistory.length - 1}
+                            onClick={() => setAdviceHistoryIndex(prev => (prev < adviceHistory.length - 1 ? prev + 1 : prev))}
+                            className={`px-3 py-1 rounded ${adviceHistoryIndex >= adviceHistory.length - 1 ? 'opacity-50 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'}`}
+                            aria-label="Next Advice"
+                        >
+                            Next &rarr;
+                        </button>
+                        <span className="text-gray-400 text-sm ml-2">
+                            {adviceHistoryIndex === -1
+                                ? 'Latest Advice'
+                                : `Viewing Advice #${adviceHistory.length - adviceHistoryIndex}`}
+                        </span>
+                    </div>
+
 
                     {aiAdvice?.status === 'loading' ? (
                         <div className="flex items-center space-x-2 text-gray-300">
