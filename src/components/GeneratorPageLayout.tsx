@@ -28,18 +28,6 @@ export default function GeneratorPageLayout() {
   const [activeTab, setActiveTab] = useState("generate");
 
 
-  // The parent component ref to the List and the Upload for job Desc.:
-  // allows it to refresh when the upload is a success:
-  // const listRef = useRef<{ fetchJobDescriptions: () => void }>(null);
-
-
-  // ------The function to refresh the List and the Upload for job Desc.:--------------
-  // const handleJobAdded = () => {
-  //   if (listRef.current) {
-  //     listRef.current.fetchJobDescriptions();
-  //   }
-  // };
-  // -----------------------------------------
 
 
   const tabLabels: { [key: string]: string } = {
