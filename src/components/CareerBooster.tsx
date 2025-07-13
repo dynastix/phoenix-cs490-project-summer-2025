@@ -40,41 +40,9 @@ const CareerBooster = () => {
     const currentResume = userDocuments.find(doc => doc.docPath === selectedResume);
     const [adviceHistory, setAdviceHistory] = useState<any[]>([]);
     const [adviceHistoryIndex, setAdviceHistoryIndex] = useState<number>(-1);
-
-
     useEffect(() => {
         let isMounted = true;
-
-        const fetchAIResumes = async (uid: string): Promise<AIResumeData[]> => {
-            try {
-                const aiResumesRef = collection(db, 'users', uid, 'userAIResumes');
-                const q = query(aiResumesRef, orderBy('createdAt', 'desc'));
-                const snapshot = await getDocs(q);
-                const aiResumes: AIResumeData[] = [];
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    aiResumes.push({
-                        id: doc.id,
-                        resumeContent: data.resumeContent || '',
-                        jobTitle: data.jobTitle || 'Unknown Position',
-                        companyName: data.companyName || 'Unknown Company',
-                        createdAt: data.createdAt || '',
-                        docType: 'AI',
-                        docPath: `ai:${doc.id}`,
-                        fileName: `${data.jobTitle} at ${data.companyName} (AI Resume)`,
-                        aiCareerAdvice: data.aiCareerAdvice || null
-                    });
-                });
-
-                return aiResumes;
-            } catch (err) {
-                console.error('Error fetching AI resumes:', err);
-                return [];
-            }
-        };
-
-        const fetchDocuments = async () => {
+        async function fetchDocuments() {
             try {
                 const auth = getAuth();
                 const user = auth.currentUser;
@@ -85,10 +53,9 @@ const CareerBooster = () => {
                     }
                     return;
                 }
-
                 const uid = user.uid;
 
-                // Fetch uploaded documents dynamically
+                // Fetch uploaded documents
                 const userDocsRef = collection(db, 'users', uid, 'userDocuments');
                 const userDocsSnapshot = await getDocs(userDocsRef);
                 const uploadedDocs: DocumentData[] = [];
@@ -106,7 +73,8 @@ const CareerBooster = () => {
                     });
                 });
 
-                const aiResumes = await fetchAIResumes(uid);
+                // Fetch AI resumes
+                const aiResumes = await fetchAIResumes(uid); // you can move this outside or inside this function
 
                 const aiAsDocData: DocumentData[] = aiResumes.map(ai => ({
                     fileName: ai.fileName,
@@ -115,7 +83,7 @@ const CareerBooster = () => {
                     uploadedAt: ai.createdAt,
                     docType: 'AI',
                     docPath: ai.docPath,
-                    aiCareerAdvice: ai.aiCareerAdvice || null
+                    aiCareerAdvice: ai.aiCareerAdvice || null,
                 }));
 
                 const combined = [...uploadedDocs, ...aiAsDocData];
@@ -123,29 +91,109 @@ const CareerBooster = () => {
                 if (isMounted) {
                     setUserDocuments(combined);
                     setLoadingDocs(false);
+
+                    // Set default selectedResume if none selected yet
+                    if (!selectedResume && combined.length > 0) {
+                        setSelectedResume(combined[0].docPath);
+                    }
                 }
-            } catch (err) {
-                console.error('Error fetching documents:', err);
+            } catch (error) {
+                console.error('Error fetching documents:', error);
                 if (isMounted) {
                     setUserDocuments([]);
                     setLoadingDocs(false);
                 }
             }
-        };
-
-        // Set AI advice from currentResume if available
-        if (currentResume?.aiCareerAdvice) {
-            setAiAdvice(currentResume.aiCareerAdvice);
-        } else {
-            setAiAdvice(null);
         }
 
         fetchDocuments();
 
         return () => {
-            isMounted = false; // Cleanup flag for async operations
+            isMounted = false;
         };
-    }, [selectedResume, currentResume]);
+    }, []); // empty deps: run only once on mount
+
+    // Fetch archived advice and update AI advice whenever selectedResume or adviceHistoryIndex changes
+    useEffect(() => {
+        if (!selectedResume) {
+            setAdviceHistory([]);
+            setAdviceHistoryIndex(-1);
+            setAiAdvice(null);
+            return;
+        }
+
+        async function fetchArchivedAdvice() {
+            try {
+                const auth = getAuth();
+                const user = auth.currentUser;
+                if (!user) return;
+                const uid = user.uid;
+
+                const archiveRef = collection(db, 'users', uid, 'archivedAIAdvice');
+                const q = query(archiveRef, where('originalResumePath', '==', selectedResume), orderBy('archivedAt', 'desc'));
+                const snapshot = await getDocs(q);
+
+                const archives: any[] = [];
+                snapshot.forEach(doc => {
+                    archives.push(doc.data().aiCareerAdvice);
+                });
+
+                setAdviceHistory(archives);
+                setAdviceHistoryIndex(-1);
+            } catch (error) {
+                console.error('Failed to fetch archived advice:', error);
+                setAdviceHistory([]);
+            }
+        }
+
+        fetchArchivedAdvice();
+
+        // Update AI advice shown based on adviceHistoryIndex
+        if (adviceHistoryIndex === -1) {
+            console.log('Showing latest AI advice');
+            setAiAdvice(currentResume?.aiCareerAdvice || null);
+        } else {
+            const idx = adviceHistory.length - 1 - adviceHistoryIndex;
+            console.log('Showing archived advice idx:', idx, adviceHistory[idx]);
+            setAiAdvice(adviceHistory[idx] || null);
+        }
+    }, [selectedResume, adviceHistoryIndex, currentResume, adviceHistory.length]);
+
+
+    // your fetchAIResumes helper here (or import)
+    async function fetchAIResumes(uid: string): Promise<AIResumeData[]> {
+        try {
+            const aiResumesRef = collection(db, 'users', uid, 'userAIResumes');
+            const q = query(aiResumesRef, orderBy('createdAt', 'desc'));
+            const snapshot = await getDocs(q);
+            const aiResumes: AIResumeData[] = [];
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                aiResumes.push({
+                    id: doc.id,
+                    resumeContent: data.resumeContent || '',
+                    jobTitle: data.jobTitle || 'Unknown Position',
+                    companyName: data.companyName || 'Unknown Company',
+                    createdAt: data.createdAt || '',
+                    docType: 'AI',
+                    docPath: `ai:${doc.id}`,
+                    fileName: `${data.jobTitle} at ${data.companyName} (AI Resume)`,
+                    aiCareerAdvice: data.aiCareerAdvice || null,
+                });
+            });
+
+            return aiResumes;
+        } catch (err) {
+            console.error('Error fetching AI resumes:', err);
+            return [];
+        }
+    }
+
+    const displayedAdvice =
+        adviceHistoryIndex === -1
+            ? currentResume?.aiCareerAdvice || aiAdvice
+            : adviceHistory[adviceHistory.length - 1 - adviceHistoryIndex];
 
 
     // Dummy resume list with mock content
@@ -342,21 +390,41 @@ const CareerBooster = () => {
                     </h3>
                     <div className="flex items-center space-x-4 mb-4">
                         <button
-                            disabled={adviceHistoryIndex === -1}
-                            onClick={() => setAdviceHistoryIndex(prev => (prev > -1 ? prev - 1 : prev))}
-                            className={`px-3 py-1 rounded ${adviceHistoryIndex === -1 ? 'opacity-50 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'}`}
-                            aria-label="Previous Advice"
+                            disabled={adviceHistory.length === 0 || adviceHistoryIndex >= adviceHistory.length - 1}
+                            onClick={() => setAdviceHistoryIndex(prev => Math.min(prev + 1, adviceHistory.length - 1))}
                         >
                             &larr; Previous
                         </button>
+
                         <button
-                            disabled={adviceHistoryIndex >= adviceHistory.length - 1}
-                            onClick={() => setAdviceHistoryIndex(prev => (prev < adviceHistory.length - 1 ? prev + 1 : prev))}
-                            className={`px-3 py-1 rounded ${adviceHistoryIndex >= adviceHistory.length - 1 ? 'opacity-50 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'}`}
-                            aria-label="Next Advice"
+                            disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1}
+                            onClick={() => setAdviceHistoryIndex(prev => Math.max(prev - 1, -1))}
                         >
                             Next &rarr;
                         </button>
+
+                        {/*
+
+                    <button
+  disabled={adviceHistory.length === 0 || adviceHistoryIndex >= adviceHistory.length - 1}
+  
+  aria-label="Previous Advice"
+>
+  &larr; Previous
+</button>
+
+<button
+  disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1}
+  
+  aria-label="Next Advice"
+>
+  Next &rarr;
+</button> */}
+
+
+
+
+
                         <span className="text-gray-400 text-sm ml-2">
                             {adviceHistoryIndex === -1
                                 ? 'Latest Advice'
