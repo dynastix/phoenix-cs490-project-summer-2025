@@ -133,13 +133,15 @@ const CareerBooster = () => {
                 const q = query(archiveRef, where('originalResumePath', '==', selectedResume), orderBy('archivedAt', 'desc'));
                 const snapshot = await getDocs(q);
 
+
                 const archives: any[] = [];
                 snapshot.forEach(doc => {
-                    archives.push(doc.data().aiCareerAdvice);
+                    archives.push(doc.data()); // include full document
                 });
 
+
                 setAdviceHistory(archives);
-                setAdviceHistoryIndex(-1);
+                // setAdviceHistoryIndex(-1);
             } catch (error) {
                 console.error('Failed to fetch archived advice:', error);
                 setAdviceHistory([]);
@@ -389,47 +391,46 @@ const CareerBooster = () => {
                         Your AI-Powered Career Advice
                     </h3>
                     <div className="flex items-center space-x-4 mb-4">
-                        <button
+                        <button className='disabled:text-gray-400'
                             disabled={adviceHistory.length === 0 || adviceHistoryIndex >= adviceHistory.length - 1}
-                            onClick={() => setAdviceHistoryIndex(prev => Math.min(prev + 1, adviceHistory.length - 1))}
+                            onClick={() => setAdviceHistoryIndex(prev => prev + 1)} // Math.min(prev + 1, adviceHistory.length - 1
                         >
                             &larr; Previous
                         </button>
 
-                        <button
-                            disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1}
+                        <button className='disabled:text-gray-400'
+                            disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1 || adviceHistoryIndex === -1}
                             onClick={() => setAdviceHistoryIndex(prev => Math.max(prev - 1, -1))}
                         >
                             Next &rarr;
                         </button>
-
-                        {/*
-
-                    <button
-  disabled={adviceHistory.length === 0 || adviceHistoryIndex >= adviceHistory.length - 1}
-  
-  aria-label="Previous Advice"
->
-  &larr; Previous
-</button>
-
-<button
-  disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1}
-  
-  aria-label="Next Advice"
->
-  Next &rarr;
-</button> */}
 
 
 
 
 
                         <span className="text-gray-400 text-sm ml-2">
-                            {adviceHistoryIndex === -1
-                                ? 'Latest Advice'
-                                : `Viewing Advice #${adviceHistory.length - adviceHistoryIndex}`}
+                            {adviceHistoryIndex === -1 ? (
+                                'Latest Advice'
+                            ) : (
+                                <>
+                                    Viewing Archived Advice #{adviceHistory.length - adviceHistoryIndex} <br />
+                                    {adviceHistoryIndex !== -1 && (() => {
+                                        const archived = adviceHistory[adviceHistory.length - 1 - adviceHistoryIndex];
+                                        const jobTitle = archived?.originalJobDescription?.jobTitle?.trim();
+                                        const companyName = archived?.originalJobDescription?.companyName?.trim();
+
+                                        return jobTitle && companyName ? (
+                                            <span className="block text-gray-400 text-sm">
+                                                For: {jobTitle} at {companyName}
+                                            </span>
+                                        ) : null;
+                                    })()}
+
+                                </>
+                            )}
                         </span>
+
                     </div>
 
 
