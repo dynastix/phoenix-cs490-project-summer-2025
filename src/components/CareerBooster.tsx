@@ -33,7 +33,7 @@ const CareerBooster = () => {
     const handleGenerateAdvice = async () => {
         if (!currentResume) return;
 
-        setAiAdvice('⏳ Generating advice...');
+        setAiAdvice({ status: 'loading' });
         try {
             const response = await fetch('/api/groq', {
                 method: 'POST',
@@ -54,11 +54,12 @@ const CareerBooster = () => {
                 setAiAdvice(parsed);
             } catch (jsonError) {
                 console.warn('⚠️ JSON parsing failed:', jsonError);
-                setAiAdvice('⚠️ Invalid JSON format received from AI.');
+                setAiAdvice({ status: 'error', message: 'Invalid JSON format received from AI.' });
+
             }
         } catch (error) {
             console.error('Error generating advice:', error);
-            setAiAdvice('❌ Failed to generate advice.');
+            setAiAdvice({ status: 'error', message: 'Failed to generate advice.' });
         }
     };
 
@@ -128,7 +129,33 @@ const CareerBooster = () => {
                         Your AI-Powered Career Advice
                     </h3>
 
-                    {aiAdvice && typeof aiAdvice === 'object' ? (
+                    {aiAdvice?.status === 'loading' ? (
+                        <div className="flex items-center space-x-2 text-gray-300">
+                            <svg
+                                className="animate-spin h-5 w-5 text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                ></path>
+                            </svg>
+                            <span>Generating advice...</span>
+                        </div>
+                    ) : aiAdvice?.status === 'error' ? (
+                        <p className="text-red-500">{aiAdvice.message}</p>
+                    ) : aiAdvice && typeof aiAdvice === 'object' ? (
                         <>
                             {/* Resume Wording Advice */}
                             <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
@@ -137,7 +164,7 @@ const CareerBooster = () => {
                                     <h4 className="text-lg font-semibold text-white">Resume Wording Advice</h4>
                                 </div>
                                 <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                    {aiAdvice.resumeWordingAdvice.map((tip: string, index: number) => (
+                                    {aiAdvice.resumeWordingAdvice?.map((tip: string, index: number) => (
                                         <li key={index}>{tip}</li>
                                     ))}
                                 </ul>
@@ -150,7 +177,7 @@ const CareerBooster = () => {
                                     <h4 className="text-lg font-semibold text-white">Experience Suggestions</h4>
                                 </div>
                                 <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                    {aiAdvice.experienceEnhancementSuggestions.map((tip: string, index: number) => (
+                                    {aiAdvice.experienceEnhancementSuggestions?.map((tip: string, index: number) => (
                                         <li key={index}>{tip}</li>
                                     ))}
                                 </ul>
@@ -170,9 +197,11 @@ const CareerBooster = () => {
                                         <h5 className="text-sm font-medium text-gray-100">Certifications or Courses</h5>
                                     </div>
                                     <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                        {aiAdvice.nextStepsToImproveCareerProspects.certificationsOrCourses.map((item: string, idx: number) => (
-                                            <li key={idx}>{item}</li>
-                                        ))}
+                                        {aiAdvice.nextStepsToImproveCareerProspects?.certificationsOrCourses?.map(
+                                            (item: string, idx: number) => (
+                                                <li key={idx}>{item}</li>
+                                            )
+                                        )}
                                     </ul>
                                 </div>
 
@@ -183,9 +212,11 @@ const CareerBooster = () => {
                                         <h5 className="text-sm font-medium text-gray-100">Job Titles to Pursue</h5>
                                     </div>
                                     <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                        {aiAdvice.nextStepsToImproveCareerProspects.jobTitlesToPursue.map((item: string, idx: number) => (
-                                            <li key={idx}>{item}</li>
-                                        ))}
+                                        {aiAdvice.nextStepsToImproveCareerProspects?.jobTitlesToPursue?.map(
+                                            (item: string, idx: number) => (
+                                                <li key={idx}>{item}</li>
+                                            )
+                                        )}
                                     </ul>
                                 </div>
 
@@ -196,18 +227,18 @@ const CareerBooster = () => {
                                         <h5 className="text-sm font-medium text-gray-100">General Career Advice</h5>
                                     </div>
                                     <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                        {aiAdvice.nextStepsToImproveCareerProspects.generalCareerAdvice.map((item: string, idx: number) => (
-                                            <li key={idx}>{item}</li>
-                                        ))}
+                                        {aiAdvice.nextStepsToImproveCareerProspects?.generalCareerAdvice?.map(
+                                            (item: string, idx: number) => (
+                                                <li key={idx}>{item}</li>
+                                            )
+                                        )}
                                     </ul>
                                 </div>
                             </div>
                         </>
                     ) : (
                         <p className="italic text-gray-500">
-                            {typeof aiAdvice === 'string'
-                                ? aiAdvice
-                                : 'AI suggestions will appear here after selecting a resume and clicking the button.'}
+                            AI suggestions will appear here after selecting a resume and clicking the button.
                         </p>
                     )}
                 </div>
