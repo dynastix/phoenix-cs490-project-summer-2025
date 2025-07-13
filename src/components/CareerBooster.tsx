@@ -155,15 +155,20 @@ const CareerBooster = () => {
                 ? JSON.stringify(currentResume.aiCareerAdvice, null, 2)
                 : '';
 
+            // Compose base text including resume and optionally job description
+            const combinedText = selectedJobDescription
+                ? `${currentResume.text}\n\n This is the Job Description to tailor the resume to:\n${selectedJobDescription.jobDescription}`
+                : currentResume.text;
+
             const prompt = hasPreviousAdvice
-                ? generateNewCareerAdvicePrompt(currentResume.text, previousAdviceText)
-                : `${baseCareerAdvicePrompt}${currentResume.text}`;
+                ? generateNewCareerAdvicePrompt(combinedText, previousAdviceText)
+                : `${baseCareerAdvicePrompt}${combinedText}`;
 
             const response = await fetch('/api/groq', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: currentResume.text,
+                    text: combinedText,
                     prompt,
                 }),
             });
@@ -198,11 +203,6 @@ const CareerBooster = () => {
         }
     };
 
-
-
-
-    // const currentResume = resumeOptions.find((resume) => resume.id === selectedResume);
-    //   const response = await callGroqAPI(resumeText, careerAdvicePrompt);
 
     return (
         <div className="max-w-9xl mx-auto px-6 space-y-6">
