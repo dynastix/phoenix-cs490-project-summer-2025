@@ -73,21 +73,23 @@ export default function JobDescUploadAndListPrev() {
                 <CardContent>
 
 
-{/* -----------Job Description Listings display UI and Upload ------------*/}
 
 
+{/* -----------Mark's component for URL job desc extraction-------------------- */}
                 <JobURLSubmit />
+
+
+
+
+{/* -----------Job Description Listings display UI and Upload ------------*/}
 
 
                 <JobDescriptionUpload onJobAdded={handleJobAdded} />
 
+                <JobDescriptionsList />
+
 {/* ---------------------------------------------- */}
 
-
-{/* -----------Mark's component for URL job desc extraction-------------------- */}
-
-
-{/* ------------------------------------------------------------- */}
 
 
 
