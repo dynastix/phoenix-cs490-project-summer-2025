@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEffect } from 'react';
+import { updateDoc, doc as docRef } from 'firebase/firestore';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -55,7 +56,8 @@ const CareerBooster = () => {
                         createdAt: data.createdAt || '',
                         docType: 'AI',
                         docPath: `ai:${doc.id}`,
-                        fileName: `${data.jobTitle} at ${data.companyName} (AI Resume)`
+                        fileName: `${data.jobTitle} at ${data.companyName} (AI Resume)`,
+                        aiCareerAdvice: data.aiCareerAdvice || null
                     });
                 });
 
@@ -176,10 +178,13 @@ const CareerBooster = () => {
     //     }
     // };
 
+
+
     const handleGenerateAdvice = async () => {
-        if (!currentResume) return;
+        if (!currentResume || !selectedResume) return;
 
         setAiAdvice({ status: 'loading' });
+
         try {
             const response = await fetch('/api/groq', {
                 method: 'POST',
@@ -194,18 +199,37 @@ const CareerBooster = () => {
 
             const { response: groqText } = await response.json();
 
-            try {
-                const parsed = JSON.parse(groqText);
-                setAiAdvice(parsed);
-            } catch (jsonError) {
-                console.warn('⚠️ JSON parsing failed:', jsonError);
-                setAiAdvice({ status: 'error', message: 'Invalid JSON format received from AI.' });
+            const parsed = JSON.parse(groqText);
+            setAiAdvice(parsed);
+
+            // Save to Firestore if it's an AI resume
+            if (selectedResume.startsWith('ai:')) {
+                const auth = getAuth();
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const resumeId = selectedResume.split(':')[1];
+                const resumeDocRef = docRef(db, 'users', user.uid, 'userAIResumes', resumeId);
+
+                await updateDoc(resumeDocRef, {
+                    aiCareerAdvice: parsed
+                });
             }
+
+            // Update local state so UI disables button
+            setUserDocuments(prev =>
+                prev.map(doc =>
+                    doc.docPath === selectedResume
+                        ? { ...doc, aiCareerAdvice: parsed }
+                        : doc
+                )
+            );
         } catch (error) {
-            console.error('Error generating advice:', error);
+            console.error('Error generating or saving advice:', error);
             setAiAdvice({ status: 'error', message: 'Failed to generate advice.' });
         }
     };
+
 
 
     // const currentResume = resumeOptions.find((resume) => resume.id === selectedResume);
@@ -242,9 +266,18 @@ const CareerBooster = () => {
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                     value={selectedResume}
                     onChange={(e) => {
-                        setSelectedResume(e.target.value);
+                        const selected = e.target.value;
+                        setSelectedResume(selected);
                         setShowPreview(false);
+
+                        const selectedDoc = userDocuments.find(doc => doc.docPath === selected);
+                        if (selectedDoc?.aiCareerAdvice) {
+                            setAiAdvice(selectedDoc.aiCareerAdvice);
+                        } else {
+                            setAiAdvice(null);
+                        }
                     }}
+
                 >
                     <option value="">-- Choose a Document --</option>
                     {userDocuments.map((doc) => (
@@ -261,11 +294,12 @@ const CareerBooster = () => {
             <div className="flex space-x-4">
                 <button
                     onClick={handleGenerateAdvice}
-                    disabled={!selectedResume}
+                    disabled={!selectedResume || !!currentResume?.aiCareerAdvice}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                     Get AI Career Advice
                 </button>
+
                 <button
                     onClick={() => setShowPreview((prev) => !prev)}
                     disabled={!selectedResume}

@@ -9,7 +9,8 @@ interface DocumentData {
   text: string;
   uploadedAt: any; // Firebase Timestamp or Date
   docType: string; // To identify which document type it is
-  docPath: string; // Store the document path for deletion
+  docPath: string; // Store the document path for deletion,
+  aiCareerAdvice?: any;
 }
 
 interface DocumentListProps {
