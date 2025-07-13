@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { db } from '@/lib/firebase';
 import careerAdvicePrompt from '@/lib/prompts/careerAdvicePrompt';
 import {
     LightBulbIcon,
@@ -16,6 +20,54 @@ const CareerBooster = () => {
     const [selectedResume, setSelectedResume] = useState('');
     const [aiAdvice, setAiAdvice] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
+    const [userDocuments, setUserDocuments] = useState<DocumentData[]>([]);
+    const [loadingDocs, setLoadingDocs] = useState(true);
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                const auth = getAuth();
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const uid = user.uid;
+                const paths = [
+                    { path: 'documentTextPdf', type: 'PDF' },
+                    { path: 'documentTextDocx', type: 'DOCX' },
+                    { path: 'documentTextTxt', type: 'TXT' },
+                    { path: 'documentTextFreeformText', type: 'Freeform Text' }
+                ];
+
+                const fetchPromises = paths.map(async ({ path, type }) => {
+                    const ref = doc(db, `users/${uid}/userDocuments/${path}`);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        return {
+                            fileName: data.fileName || 'Untitled',
+                            fileType: data.fileType || type,
+                            text: data.text || '',
+                            uploadedAt: data.uploadedAt || null,
+                            docType: type,
+                            docPath: path
+                        } as DocumentData;
+                    }
+                    return null;
+                });
+
+                const results = await Promise.all(fetchPromises);
+                const valid = results.filter((r): r is DocumentData => r !== null);
+                setUserDocuments(valid);
+            } catch (err) {
+                console.error('Error fetching user documents:', err);
+            } finally {
+                setLoadingDocs(false);
+            }
+        };
+
+        fetchDocuments();
+    }, []);
+
 
     // Dummy resume list with mock content
     const resumeOptions = [
@@ -30,6 +82,39 @@ const CareerBooster = () => {
     //     setAiAdvice(`Here's some tailored advice based on your selected resume: ${selectedResume}`);
     //   };
 
+    // const handleGenerateAdvice = async () => {
+    //     if (!currentResume) return;
+
+    //     setAiAdvice({ status: 'loading' });
+    //     try {
+    //         const response = await fetch('/api/groq', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({
+    //                 text: currentResume.content,
+    //                 prompt: careerAdvicePrompt,
+    //             }),
+    //         });
+
+    //         if (!response.ok) throw new Error('Groq API request failed');
+
+    //         const { response: groqText } = await response.json();
+
+    //         // Try parsing the JSON
+    //         try {
+    //             const parsed = JSON.parse(groqText);
+    //             setAiAdvice(parsed);
+    //         } catch (jsonError) {
+    //             console.warn('⚠️ JSON parsing failed:', jsonError);
+    //             setAiAdvice({ status: 'error', message: 'Invalid JSON format received from AI.' });
+
+    //         }
+    //     } catch (error) {
+    //         console.error('Error generating advice:', error);
+    //         setAiAdvice({ status: 'error', message: 'Failed to generate advice.' });
+    //     }
+    // };
+
     const handleGenerateAdvice = async () => {
         if (!currentResume) return;
 
@@ -39,7 +124,7 @@ const CareerBooster = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: currentResume.content,
+                    text: currentResume.text,
                     prompt: careerAdvicePrompt,
                 }),
             });
@@ -48,14 +133,12 @@ const CareerBooster = () => {
 
             const { response: groqText } = await response.json();
 
-            // Try parsing the JSON
             try {
                 const parsed = JSON.parse(groqText);
                 setAiAdvice(parsed);
             } catch (jsonError) {
                 console.warn('⚠️ JSON parsing failed:', jsonError);
                 setAiAdvice({ status: 'error', message: 'Invalid JSON format received from AI.' });
-
             }
         } catch (error) {
             console.error('Error generating advice:', error);
@@ -64,7 +147,8 @@ const CareerBooster = () => {
     };
 
 
-    const currentResume = resumeOptions.find((resume) => resume.id === selectedResume);
+    // const currentResume = resumeOptions.find((resume) => resume.id === selectedResume);
+    const currentResume = userDocuments.find(doc => doc.docPath === selectedResume);
     //   const response = await callGroqAPI(resumeText, careerAdvicePrompt);
 
     return (
@@ -76,7 +160,7 @@ const CareerBooster = () => {
                 <label htmlFor="resumeSelect" className="block text-sm font-medium text-gray-300">
                     Select a Resume
                 </label>
-                <select
+                {/* <select
                     id="resumeSelect"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                     value={selectedResume}
@@ -91,7 +175,24 @@ const CareerBooster = () => {
                             {resume.name}
                         </option>
                     ))}
+                </select> */}
+                <select
+                    id="resumeSelect"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    value={selectedResume}
+                    onChange={(e) => {
+                        setSelectedResume(e.target.value);
+                        setShowPreview(false);
+                    }}
+                >
+                    <option value="">-- Choose a Document --</option>
+                    {userDocuments.map((doc, index) => (
+                        <option key={doc.docPath} value={doc.docPath}>
+                            {doc.fileName} ({doc.docType})
+                        </option>
+                    ))}
                 </select>
+
             </div>
 
             {/* Actions */}
@@ -109,18 +210,25 @@ const CareerBooster = () => {
                     className="bg-gray-200 text-black px-4 py-2 rounded hover:bg-gray-300 disabled:opacity-50"
                 >
                     {showPreview ? 'Hide Preview' : 'Preview Resume'}
+
+
                 </button>
             </div>
 
             {/* Resume Preview */}
             {showPreview && currentResume && (
                 <div className="mt-4 p-4 border border-gray-300 rounded bg-gray-50">
-                    <h3 className="text-lg font-medium mb-2">Resume Preview</h3>
+                    <h3 className="text-lg font-medium mb-2">Document Preview</h3>
                     <pre className="whitespace-pre-wrap text-sm text-gray-800">
-                        {currentResume.content}
+                        {currentResume.text}
                     </pre>
                 </div>
             )}
+            {loadingDocs ? (
+                <p className="text-gray-400 italic">Loading your documents...</p>
+            ) : userDocuments.length === 0 ? (
+                <p className="text-gray-400 italic">No documents uploaded yet.</p>
+            ) : null}
 
             {/* AI Advice Output */}
             <div className="mt-6 border-t pt-4">
