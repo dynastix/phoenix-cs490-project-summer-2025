@@ -157,6 +157,7 @@ const CareerBooster = () => {
             const idx = adviceHistory.length - 1 - adviceHistoryIndex;
             const archived = adviceHistory[idx];
             setAiAdvice(archived?.aiCareerAdvice || null);
+
         }
     }, [selectedResume, adviceHistoryIndex, currentResume, adviceHistory.length]);
 
@@ -322,25 +323,28 @@ const CareerBooster = () => {
                     </select>
 
                     {/* Display View - Scrollable */}
-                    {currentResume && (
-                        <div className="mt-4 bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed">
-                            <div className="flex justify-between items-center mb-4">
-                                <span className="text-sm px-3 py-1 rounded-full bg-zinc-800">
-                                    {mimeTypeToLabel(currentResume.docType) || 'Resume'}
-                                </span>
-                                <span className="text-sm text-zinc-400">
-                                    Created: {formatDate(currentResume.uploadedAt || currentResume.createdAt || '')}
-                                </span>
-                            </div>
-                            <div
-                                className={`mt-4 bg-zinc-900 border rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed
+                    {selectedResume &&
+                        currentResume &&
+                        currentResume.fileName &&
+                        currentResume.fileName !== 'Untitled' && (
+                            <div className="mt-4 bg-zinc-900 border border-zinc-700 rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed">
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-sm px-3 py-1 rounded-full bg-zinc-800">
+                                        {mimeTypeToLabel(currentResume.docType) || 'Resume'}
+                                    </span>
+                                    <span className="text-sm text-zinc-400">
+                                        Created: {formatDate(currentResume.uploadedAt || currentResume.createdAt || '')}
+                                    </span>
+                                </div>
+                                <div
+                                    className={`mt-4 bg-zinc-900 border rounded-lg p-6 max-h-[400px] overflow-y-auto whitespace-pre-wrap text-zinc-200 leading-relaxed
     ${selectedResume ? 'border-blue-500' : 'border-zinc-700'}`}
-                            >
-                                {currentResume.text || currentResume.resumeContent}
-                            </div>
+                                >
+                                    {currentResume.text || currentResume.resumeContent}
+                                </div>
 
-                        </div>
-                    )}
+                            </div>
+                        )}
                     {/* Actions */}
                     <div className="flex space-x-4" style={{ marginTop: '2rem' }}>
                         {selectedResume && (
@@ -384,166 +388,170 @@ const CareerBooster = () => {
 
 
             {/* AI Advice Output */}
-            <div className="mt-6 border-t pt-4">
-                <div className="mt-10 space-y-6">
-                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
-                        Your AI-Powered Career Advice
-                    </h3>
-                    <div className="flex items-center space-x-4 mb-4">
-                        <button className='disabled:text-gray-400'
-                            disabled={adviceHistory.length === 0 || adviceHistoryIndex >= adviceHistory.length - 1}
-                            onClick={() => setAdviceHistoryIndex(prev => prev + 1)} // Math.min(prev + 1, adviceHistory.length - 1
-                        >
-                            &larr; Previous
-                        </button>
+            {selectedResume &&
+                currentResume &&
+                currentResume.fileName &&
+                currentResume.fileName !== 'Untitled' && (
+                    <div className="mt-6 border-t pt-4">
+                        <div className="mt-10 space-y-6">
+                            <h3 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
+                                Your AI-Powered Career Advice
+                            </h3>
+                            <div className="flex items-center space-x-4 mb-4">
+                                <button className='disabled:text-gray-400'
+                                    disabled={adviceHistory.length === 0 || adviceHistoryIndex >= adviceHistory.length - 1}
+                                    onClick={() => setAdviceHistoryIndex(prev => prev + 1)} // Math.min(prev + 1, adviceHistory.length - 1
+                                >
+                                    &larr; Previous
+                                </button>
 
-                        <button className='disabled:text-gray-400'
-                            disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1 || adviceHistoryIndex === -1}
-                            onClick={() => setAdviceHistoryIndex(prev => Math.max(prev - 1, -1))}
-                        >
-                            Next &rarr;
-                        </button>
+                                <button className='disabled:text-gray-400'
+                                    disabled={adviceHistory.length === 0 || adviceHistoryIndex <= -1 || adviceHistoryIndex === -1}
+                                    onClick={() => setAdviceHistoryIndex(prev => Math.max(prev - 1, -1))}
+                                >
+                                    Next &rarr;
+                                </button>
 
-                        <span className="text-gray-400 text-sm ml-2">
-                            {adviceHistoryIndex === -1 ? (
-                                'Latest Advice'
-                            ) : (
+                                <span className="text-gray-400 text-sm ml-2">
+                                    {adviceHistoryIndex === -1 ? (
+                                        'Latest Advice'
+                                    ) : (
+                                        <>
+                                            Viewing Archived Advice #{adviceHistory.length - adviceHistoryIndex} <br />
+                                            {adviceHistoryIndex !== -1 && (() => {
+                                                const archived = adviceHistory[adviceHistory.length - 1 - adviceHistoryIndex];
+                                                const jobTitle = archived?.originalJobDescription?.jobTitle?.trim();
+                                                const companyName = archived?.originalJobDescription?.companyName?.trim();
+
+
+                                                return jobTitle && companyName ? (
+                                                    <span className="block text-gray-400 text-sm">
+                                                        For: {jobTitle} at {companyName}
+                                                    </span>
+                                                ) : null;
+                                            })()}
+
+                                        </>
+                                    )}
+                                </span>
+
+                            </div>
+
+
+                            {aiAdvice?.status === 'loading' ? (
+                                <div className="flex items-center space-x-2 text-gray-300">
+                                    <svg
+                                        className="animate-spin h-5 w-5 text-blue-500"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                        ></path>
+                                    </svg>
+                                    <span>Generating advice...</span>
+                                </div>
+                            ) : aiAdvice?.status === 'error' ? (
+                                <p className="text-red-500">{aiAdvice.message}</p>
+                            ) : aiAdvice && typeof aiAdvice === 'object' ? (
                                 <>
-                                    Viewing Archived Advice #{adviceHistory.length - adviceHistoryIndex} <br />
-                                    {adviceHistoryIndex !== -1 && (() => {
-                                        const archived = adviceHistory[adviceHistory.length - 1 - adviceHistoryIndex];
-                                        const jobTitle = archived?.originalJobDescription?.jobTitle?.trim();
-                                        const companyName = archived?.originalJobDescription?.companyName?.trim();
+                                    {/* Resume Wording Advice */}
+                                    <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                            <LightBulbIcon className="h-5 w-5 text-yellow-400" />
+                                            <h4 className="text-lg font-semibold text-white">Resume Wording Advice</h4>
+                                        </div>
+                                        <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                            {aiAdvice.resumeWordingAdvice?.map((tip: string, index: number) => (
+                                                <li key={index}>{tip}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
 
+                                    {/* Experience Enhancement Suggestions */}
+                                    <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                            <ChartBarIcon className="h-5 w-5 text-green-400" />
+                                            <h4 className="text-lg font-semibold text-white">Experience Suggestions</h4>
+                                        </div>
+                                        <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                            {aiAdvice.experienceEnhancementSuggestions?.map((tip: string, index: number) => (
+                                                <li key={index}>{tip}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
 
-                                        return jobTitle && companyName ? (
-                                            <span className="block text-gray-400 text-sm">
-                                                For: {jobTitle} at {companyName}
-                                            </span>
-                                        ) : null;
-                                    })()}
+                                    {/* Next Steps */}
+                                    <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+                                        <div className="flex items-center space-x-2 mb-4">
+                                            <BriefcaseIcon className="h-5 w-5 text-blue-400" />
+                                            <h4 className="text-lg font-semibold text-white">Next Steps to Improve Career Prospects</h4>
+                                        </div>
 
+                                        {/* Certifications or Courses */}
+                                        <div className="mb-3">
+                                            <div className="flex items-center space-x-1 mb-1">
+                                                <AcademicCapIcon className="h-4 w-4 text-indigo-300" />
+                                                <h5 className="text-sm font-medium text-gray-100">Certifications or Courses</h5>
+                                            </div>
+                                            <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                                {aiAdvice.nextStepsToImproveCareerProspects?.certificationsOrCourses?.map(
+                                                    (item: string, idx: number) => (
+                                                        <li key={idx}>{item}</li>
+                                                    )
+                                                )}
+                                            </ul>
+                                        </div>
+
+                                        {/* Job Titles to Pursue */}
+                                        <div className="mb-3">
+                                            <div className="flex items-center space-x-1 mb-1">
+                                                <BriefcaseIcon className="h-4 w-4 text-indigo-300" />
+                                                <h5 className="text-sm font-medium text-gray-100">Job Titles to Pursue</h5>
+                                            </div>
+                                            <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                                {aiAdvice.nextStepsToImproveCareerProspects?.jobTitlesToPursue?.map(
+                                                    (item: string, idx: number) => (
+                                                        <li key={idx}>{item}</li>
+                                                    )
+                                                )}
+                                            </ul>
+                                        </div>
+
+                                        {/* General Career Advice */}
+                                        <div>
+                                            <div className="flex items-center space-x-1 mb-1">
+                                                <ChatBubbleLeftIcon className="h-4 w-4 text-indigo-300" />
+                                                <h5 className="text-sm font-medium text-gray-100">General Career Advice</h5>
+                                            </div>
+                                            <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                                                {aiAdvice.nextStepsToImproveCareerProspects?.generalCareerAdvice?.map(
+                                                    (item: string, idx: number) => (
+                                                        <li key={idx}>{item}</li>
+                                                    )
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </>
+                            ) : (
+                                <p className="italic text-gray-500">
+                                    AI suggestions will appear here after selecting a resume and clicking the button.
+                                </p>
                             )}
-                        </span>
-
-                    </div>
-
-
-                    {aiAdvice?.status === 'loading' ? (
-                        <div className="flex items-center space-x-2 text-gray-300">
-                            <svg
-                                className="animate-spin h-5 w-5 text-blue-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                ></circle>
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                ></path>
-                            </svg>
-                            <span>Generating advice...</span>
                         </div>
-                    ) : aiAdvice?.status === 'error' ? (
-                        <p className="text-red-500">{aiAdvice.message}</p>
-                    ) : aiAdvice && typeof aiAdvice === 'object' ? (
-                        <>
-                            {/* Resume Wording Advice */}
-                            <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
-                                <div className="flex items-center space-x-2 mb-2">
-                                    <LightBulbIcon className="h-5 w-5 text-yellow-400" />
-                                    <h4 className="text-lg font-semibold text-white">Resume Wording Advice</h4>
-                                </div>
-                                <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                    {aiAdvice.resumeWordingAdvice?.map((tip: string, index: number) => (
-                                        <li key={index}>{tip}</li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Experience Enhancement Suggestions */}
-                            <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
-                                <div className="flex items-center space-x-2 mb-2">
-                                    <ChartBarIcon className="h-5 w-5 text-green-400" />
-                                    <h4 className="text-lg font-semibold text-white">Experience Suggestions</h4>
-                                </div>
-                                <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                    {aiAdvice.experienceEnhancementSuggestions?.map((tip: string, index: number) => (
-                                        <li key={index}>{tip}</li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Next Steps */}
-                            <div className="bg-gray-900 dark:bg-gray-800 rounded-lg p-4 shadow-lg">
-                                <div className="flex items-center space-x-2 mb-4">
-                                    <BriefcaseIcon className="h-5 w-5 text-blue-400" />
-                                    <h4 className="text-lg font-semibold text-white">Next Steps to Improve Career Prospects</h4>
-                                </div>
-
-                                {/* Certifications or Courses */}
-                                <div className="mb-3">
-                                    <div className="flex items-center space-x-1 mb-1">
-                                        <AcademicCapIcon className="h-4 w-4 text-indigo-300" />
-                                        <h5 className="text-sm font-medium text-gray-100">Certifications or Courses</h5>
-                                    </div>
-                                    <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                        {aiAdvice.nextStepsToImproveCareerProspects?.certificationsOrCourses?.map(
-                                            (item: string, idx: number) => (
-                                                <li key={idx}>{item}</li>
-                                            )
-                                        )}
-                                    </ul>
-                                </div>
-
-                                {/* Job Titles to Pursue */}
-                                <div className="mb-3">
-                                    <div className="flex items-center space-x-1 mb-1">
-                                        <BriefcaseIcon className="h-4 w-4 text-indigo-300" />
-                                        <h5 className="text-sm font-medium text-gray-100">Job Titles to Pursue</h5>
-                                    </div>
-                                    <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                        {aiAdvice.nextStepsToImproveCareerProspects?.jobTitlesToPursue?.map(
-                                            (item: string, idx: number) => (
-                                                <li key={idx}>{item}</li>
-                                            )
-                                        )}
-                                    </ul>
-                                </div>
-
-                                {/* General Career Advice */}
-                                <div>
-                                    <div className="flex items-center space-x-1 mb-1">
-                                        <ChatBubbleLeftIcon className="h-4 w-4 text-indigo-300" />
-                                        <h5 className="text-sm font-medium text-gray-100">General Career Advice</h5>
-                                    </div>
-                                    <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
-                                        {aiAdvice.nextStepsToImproveCareerProspects?.generalCareerAdvice?.map(
-                                            (item: string, idx: number) => (
-                                                <li key={idx}>{item}</li>
-                                            )
-                                        )}
-                                    </ul>
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <p className="italic text-gray-500">
-                            AI suggestions will appear here after selecting a resume and clicking the button.
-                        </p>
-                    )}
-                </div>
-            </div>
+                    </div>)}
         </div>
     );
 };
