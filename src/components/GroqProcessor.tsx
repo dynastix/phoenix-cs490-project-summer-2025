@@ -2,6 +2,7 @@ import { auth, db } from '@/lib/firebase'; // Adjust path as needed
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { useEffect, useState } from 'react';
+import careerAdvicePrompt from '@/lib/prompts/careerAdvicePrompt';
 
 interface GroqProcessorProps {}
 
@@ -760,4 +761,79 @@ Combine the following JSON objects:`;
       </div>
     </div>
   );
+}
+
+export async function processCareerAdviceHandler({
+  user,
+  sourceDocId = 'documentText',
+  targetDocId = 'careerAdvice',
+  textField = 'text',
+  onStatus,
+}: {
+  user: User;
+  sourceDocId?: string;
+  targetDocId?: string;
+  textField?: string;
+  onStatus?: (message: string) => void;
+}) {
+  const setStatus = (msg: string) => onStatus?.(msg);
+
+  setStatus('🧠 Starting career advice generation...');
+
+  try {
+    // Step 1: Fetch resume text
+    const sourceDocRef = doc(db, 'users', user.uid, 'userDocuments', sourceDocId);
+    const sourceDoc = await getDoc(sourceDocRef);
+
+    if (!sourceDoc.exists()) {
+      const errMsg = `❌ Source document not found: ${sourceDocId}`;
+      setStatus(errMsg);
+      throw new Error(errMsg);
+    }
+
+    const textContent = sourceDoc.data()?.[textField];
+    if (!textContent) {
+      const errMsg = '❌ Text field missing in document';
+      setStatus(errMsg);
+      throw new Error(errMsg);
+    }
+
+    // Step 2: Call Groq API
+    setStatus('🤖 Calling Groq API for career advice...');
+    const response = await callGroqAPI(textContent, careerAdvicePrompt);
+
+    if (!response) {
+      const errMsg = '❌ Groq API failed to return career advice';
+      setStatus(errMsg);
+      throw new Error(errMsg);
+    }
+
+    const cleanedAdvice = cleanJSONResponse(response);
+    const validation = validateJSON(cleanedAdvice);
+
+    if (!validation.isValid) {
+      setStatus(`⚠️ JSON format issue: ${validation.error}`);
+    } else {
+      setStatus('✅ Valid JSON response for career advice');
+    }
+
+    // Step 3: Save response to Firestore
+    const targetDocRef = doc(db, 'users', user.uid, 'userDocuments', targetDocId);
+    await setDoc(targetDocRef, {
+      originalText: textContent,
+      careerAdvice: cleanedAdvice,
+      promptUsed: careerAdvicePrompt,
+      processedAt: new Date(),
+      isValidJSON: validation.isValid,
+      jsonError: validation.error ?? null,
+    });
+
+    setStatus(validation.isValid
+      ? '✅ Career advice saved successfully'
+      : '⚠️ Saved, but check JSON validity');
+  } catch (err: any) {
+    console.error('❌ Career advice processing failed:', err);
+    setStatus(`❌ Unexpected error during career advice processing`);
+    throw err;
+  }
 }
