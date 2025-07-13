@@ -117,7 +117,7 @@ const CareerBooster = () => {
                 <h3 className="text-lg font-medium mb-2">Your AI Advice</h3>
                 <div className="text-gray-300 space-y-4">
                     {typeof aiAdvice === 'string' ? (
-                        <p className="italic text-sm text-gray-500">Loading or invalid response...</p>
+                        <p className="italic text-sm text-gray-500">⏳ Generating advice...</p>
                     ) : aiAdvice ? (
                         <>
                             {/* Resume Wording Advice */}
