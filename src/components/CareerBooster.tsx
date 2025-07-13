@@ -114,73 +114,63 @@ const CareerBooster = () => {
 
             {/* AI Advice Output */}
             <div className="mt-6 border-t pt-4">
-                <h3 className="text-lg font-medium mb-2">Your AI Advice</h3>
-                <div className="text-gray-300 space-y-4">
-                    {typeof aiAdvice === 'string' ? (
-                        <p className="italic text-sm text-gray-500">⏳ Generating advice...</p>
-                    ) : aiAdvice ? (
-                        <>
-                            {/* Resume Wording Advice */}
-                            <div>
-                                <h4 className="text-lg font-semibold text-white">Resume Wording Advice</h4>
-                                <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
-                                    {aiAdvice.resumeWordingAdvice.map((tip: string, index: number) => (
-                                        <li key={index}>{tip}</li>
-                                    ))}
-                                </ul>
-                            </div>
+            <div className="mt-10 space-y-6">
+  <h3 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
+    🎯 Your AI-Powered Career Advice
+  </h3>
 
-                            {/* Experience Enhancement Suggestions */}
-                            <div>
-                                <h4 className="text-lg font-semibold text-white">Experience Enhancement Suggestions</h4>
-                                <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
-                                    {aiAdvice.experienceEnhancementSuggestions.map((tip: string, index: number) => (
-                                        <li key={index}>{tip}</li>
-                                    ))}
-                                </ul>
-                            </div>
+  {/* Resume Wording Advice */}
+  <div className="bg-gray-800 rounded-lg p-4 shadow">
+    <h4 className="text-xl font-semibold text-blue-400 mb-2 flex items-center">💡 Resume Wording Advice</h4>
+    <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
+      {aiAdvice.resumeWordingAdvice.map((tip: string, index: number) => (
+        <li key={index}>{tip}</li>
+      ))}
+    </ul>
+  </div>
 
-                            {/* Next Steps */}
-                            <div>
-                                <h4 className="text-lg font-semibold text-white">Next Steps to Improve Career Prospects</h4>
+  {/* Experience Enhancement Suggestions */}
+  <div className="bg-gray-800 rounded-lg p-4 shadow">
+    <h4 className="text-xl font-semibold text-green-400 mb-2 flex items-center">📈 Experience Suggestions</h4>
+    <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
+      {aiAdvice.experienceEnhancementSuggestions.map((tip: string, index: number) => (
+        <li key={index}>{tip}</li>
+      ))}
+    </ul>
+  </div>
 
-                                {/* Certifications or Courses */}
-                                <div className="mt-2">
-                                    <h5 className="text-md font-medium text-gray-100">Certifications or Courses</h5>
-                                    <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
-                                        {aiAdvice.nextStepsToImproveCareerProspects.certificationsOrCourses.map((item: string, idx: number) => (
-                                            <li key={idx}>{item}</li>
-                                        ))}
-                                    </ul>
-                                </div>
+  {/* Next Steps */}
+  <div className="bg-gray-800 rounded-lg p-4 shadow">
+    <h4 className="text-xl font-semibold text-yellow-400 mb-4 flex items-center">🚀 Career Growth Plan</h4>
 
-                                {/* Job Titles to Pursue */}
-                                <div className="mt-2">
-                                    <h5 className="text-md font-medium text-gray-100">Job Titles to Pursue</h5>
-                                    <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
-                                        {aiAdvice.nextStepsToImproveCareerProspects.jobTitlesToPursue.map((item: string, idx: number) => (
-                                            <li key={idx}>{item}</li>
-                                        ))}
-                                    </ul>
-                                </div>
+    <div className="mb-3">
+      <h5 className="text-md font-medium text-yellow-300 mb-1">📚 Certifications or Courses</h5>
+      <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
+        {aiAdvice.nextStepsToImproveCareerProspects.certificationsOrCourses.map((item: string, idx: number) => (
+          <li key={idx}>{item}</li>
+        ))}
+      </ul>
+    </div>
 
-                                {/* General Career Advice */}
-                                <div className="mt-2">
-                                    <h5 className="text-md font-medium text-gray-100">General Career Advice</h5>
-                                    <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
-                                        {aiAdvice.nextStepsToImproveCareerProspects.generalCareerAdvice.map((item: string, idx: number) => (
-                                            <li key={idx}>{item}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <p className="italic text-gray-500">
-                            AI suggestions will appear here after selecting a resume and clicking the button.
-                        </p>
-                    )}
-                </div>
+    <div className="mb-3">
+      <h5 className="text-md font-medium text-yellow-300 mb-1">🎯 Job Titles to Pursue</h5>
+      <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
+        {aiAdvice.nextStepsToImproveCareerProspects.jobTitlesToPursue.map((item: string, idx: number) => (
+          <li key={idx}>{item}</li>
+        ))}
+      </ul>
+    </div>
+
+    <div>
+      <h5 className="text-md font-medium text-yellow-300 mb-1">💬 General Career Advice</h5>
+      <ul className="list-disc pl-6 space-y-1 text-gray-200 text-sm">
+        {aiAdvice.nextStepsToImproveCareerProspects.generalCareerAdvice.map((item: string, idx: number) => (
+          <li key={idx}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</div>
 
             </div>
         </div>
