@@ -38,7 +38,15 @@ const CareerBooster = () => {
             if (!response.ok) throw new Error('Groq API request failed');
 
             const { response: groqText } = await response.json();
-            setAiAdvice(groqText || '⚠️ No advice returned.');
+
+            // Try parsing the JSON
+            try {
+                const parsed = JSON.parse(groqText);
+                setAiAdvice(parsed);
+            } catch (jsonError) {
+                console.warn('⚠️ JSON parsing failed:', jsonError);
+                setAiAdvice('⚠️ Invalid JSON format received from AI.');
+            }
         } catch (error) {
             console.error('Error generating advice:', error);
             setAiAdvice('❌ Failed to generate advice.');
@@ -107,15 +115,73 @@ const CareerBooster = () => {
             {/* AI Advice Output */}
             <div className="mt-6 border-t pt-4">
                 <h3 className="text-lg font-medium mb-2">Your AI Advice</h3>
-                <div className="text-gray-300">
-                    {aiAdvice ? (
-                        <p>{aiAdvice}</p>
+                <div className="text-gray-300 space-y-4">
+                    {typeof aiAdvice === 'string' ? (
+                        <p className="italic text-sm text-gray-500">Loading or invalid response...</p>
+                    ) : aiAdvice ? (
+                        <>
+                            {/* Resume Wording Advice */}
+                            <div>
+                                <h4 className="text-lg font-semibold text-white">Resume Wording Advice</h4>
+                                <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
+                                    {aiAdvice.resumeWordingAdvice.map((tip: string, index: number) => (
+                                        <li key={index}>{tip}</li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Experience Enhancement Suggestions */}
+                            <div>
+                                <h4 className="text-lg font-semibold text-white">Experience Enhancement Suggestions</h4>
+                                <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
+                                    {aiAdvice.experienceEnhancementSuggestions.map((tip: string, index: number) => (
+                                        <li key={index}>{tip}</li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Next Steps */}
+                            <div>
+                                <h4 className="text-lg font-semibold text-white">Next Steps to Improve Career Prospects</h4>
+
+                                {/* Certifications or Courses */}
+                                <div className="mt-2">
+                                    <h5 className="text-md font-medium text-gray-100">Certifications or Courses</h5>
+                                    <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
+                                        {aiAdvice.nextStepsToImproveCareerProspects.certificationsOrCourses.map((item: string, idx: number) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                {/* Job Titles to Pursue */}
+                                <div className="mt-2">
+                                    <h5 className="text-md font-medium text-gray-100">Job Titles to Pursue</h5>
+                                    <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
+                                        {aiAdvice.nextStepsToImproveCareerProspects.jobTitlesToPursue.map((item: string, idx: number) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                {/* General Career Advice */}
+                                <div className="mt-2">
+                                    <h5 className="text-md font-medium text-gray-100">General Career Advice</h5>
+                                    <ul className="list-disc pl-5 text-sm text-gray-200 space-y-1">
+                                        {aiAdvice.nextStepsToImproveCareerProspects.generalCareerAdvice.map((item: string, idx: number) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </>
                     ) : (
                         <p className="italic text-gray-500">
                             AI suggestions will appear here after selecting a resume and clicking the button.
                         </p>
                     )}
                 </div>
+
             </div>
         </div>
     );
