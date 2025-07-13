@@ -31,18 +31,6 @@ export default function GeneratorPageLayout() {
   const [activeTab, setActiveTab] = useState("generate");
 
 
-  // The parent component ref to the List and the Upload for job Desc.:
-  // allows it to refresh when the upload is a success:
-  // const listRef = useRef<{ fetchJobDescriptions: () => void }>(null);
-
-
-  // ------The function to refresh the List and the Upload for job Desc.:--------------
-  // const handleJobAdded = () => {
-  //   if (listRef.current) {
-  //     listRef.current.fetchJobDescriptions();
-  //   }
-  // };
-  // -----------------------------------------
 
 
   const tabLabels: { [key: string]: string } = {
@@ -83,38 +71,12 @@ export default function GeneratorPageLayout() {
         {activeTab === "jobs" && (
           <div className="animate-fade-in space-y-6 max-w-4xl mx-auto mt-2">
 
-             <JobURLSubmit />
             {/*------- Job Description Components: ----------*/}
             <JobDescUploadAndListPrev />
 
 
-            {/* <JobDescriptionUpload onJobAdded={handleJobAdded} />
-          
-                          <JobDescriptionsList ref={listRef} /> */}
-            {/* ---------------------- */}
-
-
-            {/* <Card className="w-full max-w shadow-lg">       
-                          <CardHeader>
-                              <CardTitle> </CardTitle>
-                          </CardHeader>      
-                          <CardContent>
-                              <CardDescription>
-                      
-                              </CardDescription>
-                          </CardContent>        
-                      </Card> */}
-
-    {/* Divider */}
-    <div className="border-t border-zinc-600" />
-
-    {/* Job List below */}
-    <div>
-      <JobDescriptionsList />
-    </div>
-  </div>
-)}
-
+          </div>
+        )}
 
         {activeTab === "generate" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
@@ -128,7 +90,7 @@ export default function GeneratorPageLayout() {
         {activeTab === "jobHistory" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
 
-            {/* < GenerateCard    /> */}
+ 
             {/* Add the job application history component here: */}
 
             <JobApplicationList />
