@@ -6,7 +6,7 @@ import ReorderWorkExperience from "@/components/ReorderWorkExperience";
 import FetchAndDisplayKey from "./FetchAndDisplayKey";
 import SummaryDisplay from "@/components/SummaryDisplay";
 import SummaryEditor from "@/components/SummaryEditor";
-
+import CareerBooster from "@/components/CareerBooster";
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 
@@ -160,6 +160,7 @@ export default function GeneratorPageLayout() {
 
 
             {/* Add the component for the AI Advice UI here: */}
+            <CareerBooster />
 
 
           </div>
