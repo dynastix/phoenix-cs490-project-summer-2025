@@ -152,14 +152,11 @@ const CareerBooster = () => {
 
         // Update AI advice shown based on adviceHistoryIndex
         if (adviceHistoryIndex === -1) {
-            console.log('Showing latest AI advice');
             setAiAdvice(currentResume?.aiCareerAdvice || null);
         } else {
             const idx = adviceHistory.length - 1 - adviceHistoryIndex;
             const archived = adviceHistory[idx];
             setAiAdvice(archived?.aiCareerAdvice || null);
-            console.log('Showing archived advice idx:', idx, adviceHistory[idx]);
-            // setAiAdvice(adviceHistory[idx] || null);
         }
     }, [selectedResume, adviceHistoryIndex, currentResume, adviceHistory.length]);
 
