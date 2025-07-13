@@ -301,13 +301,17 @@ const CareerBooster = () => {
 
             {/* Actions */}
             <div className="flex space-x-4">
-                <button
-                    onClick={handleGenerateAdvice}
-                    disabled={!selectedResume || !!(currentResume?.aiCareerAdvice || aiAdvice)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                    Get AI Career Advice
-                </button>
+                {selectedResume && (
+                    <button
+                        onClick={handleGenerateAdvice}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                        {currentResume?.aiCareerAdvice || aiAdvice
+                            ? 'Regenerate AI Advice'
+                            : 'Get AI Career Advice'}
+                    </button>
+                )}
+
 
 
                 <button
