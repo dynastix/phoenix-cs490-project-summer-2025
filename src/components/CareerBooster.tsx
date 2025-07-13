@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { updateDoc, doc as docRef } from 'firebase/firestore';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import UserJobDescriptionList from "@/components/UserJobDescriptionList";
 import { getAuth } from 'firebase/auth';
 import { db } from '@/lib/firebase';
@@ -150,10 +150,14 @@ const CareerBooster = () => {
         setAiAdvice({ status: 'loading' });
 
         try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const uid = user.uid;
+
             const hasPreviousAdvice = currentResume.aiCareerAdvice !== null;
-            const previousAdviceText = hasPreviousAdvice
-                ? JSON.stringify(currentResume.aiCareerAdvice, null, 2)
-                : '';
+            const previousAdvice = currentResume.aiCareerAdvice;
 
             // Compose base text including resume and optionally job description
             const combinedText = selectedJobDescription
@@ -161,7 +165,7 @@ const CareerBooster = () => {
                 : currentResume.text;
 
             const prompt = hasPreviousAdvice
-                ? generateNewCareerAdvicePrompt(combinedText, previousAdviceText)
+                ? generateNewCareerAdvicePrompt(combinedText, JSON.stringify(previousAdvice, null, 2))
                 : `${baseCareerAdvicePrompt}${combinedText}`;
 
             const response = await fetch('/api/groq', {
@@ -179,15 +183,28 @@ const CareerBooster = () => {
             const parsed = JSON.parse(groqText);
             setAiAdvice(parsed);
 
-            const auth = getAuth();
-            const user = auth.currentUser;
-            if (!user) return;
+            // Archive previous advice if exists
+            if (hasPreviousAdvice) {
+                const archiveRef = collection(db, 'users', uid, 'archivedAIAdvice');
+                await addDoc(archiveRef, {
+                    archivedAt: serverTimestamp(),
+                    originalResumePath: selectedResume,
+                    originalJobDescription: selectedJobDescription ? {
+                        id: selectedJobDescription.id || null,
+                        jobTitle: selectedJobDescription.jobTitle,
+                        companyName: selectedJobDescription.companyName,
+                        jobDescription: selectedJobDescription.jobDescription,
+                    } : null,
+                    aiCareerAdvice: previousAdvice,
+                });
+            }
 
+            // Update original resume doc with new advice
             const docPathParts = selectedResume.startsWith('ai:')
                 ? ['userAIResumes', selectedResume.split(':')[1]]
                 : ['userDocuments', selectedResume];
 
-            const resumeDocRef = docRef(db, 'users', user.uid, ...docPathParts);
+            const resumeDocRef = docRef(db, 'users', uid, ...docPathParts);
             await updateDoc(resumeDocRef, { aiCareerAdvice: parsed });
 
             setUserDocuments(prev =>
