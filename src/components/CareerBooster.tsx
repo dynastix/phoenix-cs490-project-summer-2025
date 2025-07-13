@@ -305,7 +305,7 @@ const CareerBooster = () => {
                     <select
                         value={selectedResume}
                         onChange={(e) => setSelectedResume(e.target.value)}
-                        className="w-full bg-zinc-800 text-zinc-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-zinc-800 text-zinc-300 rounded border border-orange-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-[0_0_2px_1px_rgba(249,115,22,0.4)]"
                     >
                         <option value="">-- Select Resume --</option>
                         {userDocuments
