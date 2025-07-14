@@ -424,6 +424,6 @@ export default function LandingPage() {
           animation-direction: reverse;
         }
       `}</style>
-cd     </div>
+    </div>
   );
 }
