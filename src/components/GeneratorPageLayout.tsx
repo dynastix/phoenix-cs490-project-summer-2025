@@ -131,7 +131,7 @@ export default function GeneratorPageLayout() {
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
 
 
-            {/* Add the component for the AI Advice UI here: */}
+            {/* Component for the AI Advice UI*/}
             <CareerBooster />
 
 
