@@ -24,11 +24,28 @@ import JobDescUploadAndListPrev from "@/components/JobDescUploadAndListPrev";
 import JobApplicationList from "./job-history/JobApplicationList";
 
 
+import ResumeTemplateManager from "./template/ResumeTemplateManager";
+
+
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+
+
+import { useEffect } from 'react';
+
+import ResumePDFGenerator from "./template/ResumePDFGenerator";
+
+
 
 
 export default function GeneratorPageLayout() {
 
   const [activeTab, setActiveTab] = useState("generate");
+
+
+
+ const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
 
 
@@ -42,7 +59,19 @@ export default function GeneratorPageLayout() {
     download: "Resume Formatting & Download",
     advice: "Career Booster",
 
+
   };
+
+
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
 
   return (
@@ -108,6 +137,8 @@ export default function GeneratorPageLayout() {
 
             {/* Add the component for the templating and styling here: */}
 
+           {/* <ResumeTemplateManager user={user} /> */}
+            <ResumePDFGenerator />
 
           </div>
         )}
