@@ -6,22 +6,15 @@ import ReorderWorkExperience from "@/components/ReorderWorkExperience";
 import FetchAndDisplayKey from "./FetchAndDisplayKey";
 import SummaryDisplay from "@/components/SummaryDisplay";
 import SummaryEditor from "@/components/SummaryEditor";
-
-
 import CareerBooster from "@/components/CareerBooster";
-
-
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-
 // import JobDescriptionsList from "@/components/JobDescriptionsList";
 // import JobDescriptionUpload from "@/components/JobDescriptionUpload";
-
 import GenerateCard from "@/components/GenerateCard";
-
 // import { useRef } from "react";
 import JobDescUploadAndListPrev from "@/components/JobDescUploadAndListPrev";
-
 import JobApplicationList from "./job-history/JobApplicationList";
+import ResumeFormatter from "@/components/ResumeFormatter";
 
 
 
@@ -113,14 +106,9 @@ export default function GeneratorPageLayout() {
         )}
 
 
-
         {activeTab === "download" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
-
-
-            {/* Add the component for the format and download UI here: */}
-
-
+            <ResumeFormatter />
           </div>
         )}
 
