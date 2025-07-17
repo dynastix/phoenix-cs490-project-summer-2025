@@ -8,24 +8,14 @@ import SummaryDisplay from "@/components/SummaryDisplay";
 import SummaryEditor from "@/components/SummaryEditor";
 import CareerBooster from "@/components/CareerBooster";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-// import JobDescriptionsList from "@/components/JobDescriptionsList";
-// import JobDescriptionUpload from "@/components/JobDescriptionUpload";
 import GenerateCard from "@/components/GenerateCard";
-// import { useRef } from "react";
 import JobDescUploadAndListPrev from "@/components/JobDescUploadAndListPrev";
 import JobApplicationList from "./job-history/JobApplicationList";
 import ResumeFormatter from "@/components/ResumeFormatter";
 
-
-
-
 export default function GeneratorPageLayout() {
 
   const [activeTab, setActiveTab] = useState("generate");
-
-
-
-
   const tabLabels: { [key: string]: string } = {
 
     generate: "Generate",
@@ -36,7 +26,6 @@ export default function GeneratorPageLayout() {
     advice: "Career Booster",
 
   };
-
 
   return (
     <div className="w-full max-w mx-auto px-1">
@@ -56,17 +45,14 @@ export default function GeneratorPageLayout() {
         ))}
       </div>
 
-
       {/* Tab Panel Container */}
       <div className="relative min-h-[300px] bg-[#2A2A2E] rounded-b-xl p-2 transition-all duration-300">
-
 
         {activeTab === "jobs" && (
           <div className="animate-fade-in space-y-6 max-w-4xl mx-auto mt-2">
 
             {/*------- Job Description Components: ----------*/}
             <JobDescUploadAndListPrev />
-
 
           </div>
         )}
@@ -79,17 +65,10 @@ export default function GeneratorPageLayout() {
           </div>
         )}
 
-
         {activeTab === "jobHistory" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
-
- 
             {/* Add the job application history component here: */}
-
             <JobApplicationList />
-
-
-
           </div>
         )}
 
@@ -100,7 +79,6 @@ export default function GeneratorPageLayout() {
 
 
             {/* Add the component for the templating and styling here: */}
-
 
           </div>
         )}

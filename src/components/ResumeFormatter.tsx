@@ -28,6 +28,10 @@ export default function ResumeFormatter() {
     fetchResumes();
   }, [user]);
 
+  useEffect(() => {
+    console.log("Loaded resumes:", resumes);
+  }, [resumes]);
+
   async function handleFormatAndDownload() {
     if (!selectedResumeId) {
       setError("Please select a resume.");
@@ -38,6 +42,9 @@ export default function ResumeFormatter() {
     setError(null);
     setDownloadUrl(null);
 
+    console.log("Selected resume ID:", selectedResumeId);
+    console.log("User ID:", user?.uid);
+
     try {
       const res = await fetch("/api/format-resume", {
         method: "POST",
@@ -45,15 +52,26 @@ export default function ResumeFormatter() {
         body: JSON.stringify({
           resumeId: selectedResumeId,
           format: selectedFormat,
+          userId: user?.uid,
         }),
       });
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server error (${res.status}): ${errorText}`);
+      }
+
       const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+      console.log("✅ Download URL:", data.downloadUrl);
+
+      if (!data.success || !data.downloadUrl) {
+        throw new Error("Invalid response from server");
+      }
 
       setDownloadUrl(data.downloadUrl);
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      console.error("❌ Format error:", err);
+      setError("Failed to format resume: " + err.message);
     } finally {
       setLoading(false);
     }

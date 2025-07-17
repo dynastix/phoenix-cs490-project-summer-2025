@@ -1,0 +1,88 @@
+Here is the LaTeX code for the resume:
+\documentclass{article}
+
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[table]{xcolor}
+\usepackage{fontspec}
+\usepackage{tikz}
+
+\definecolor{primary}{HTML}{3498db}
+\definecolor{secondary}{HTML}{455a64}
+\definecolor{accent}{HTML}{8e44ad}
+
+\setmainfont{Montserrat}
+\setsansfont{Lato}
+
+\titleformat{\section}[block]{\Large\bfseries\sffamily\color{primary}}{\thesection}{1em}{}
+\titleformat{\subsection}[block]{\large\sffamily\color{secondary}}{\thesubsection}{1em}{}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{center}
+{\Huge\bfseries\sffamily MAAHIR VOHRA}\\
+\medskip
+{\large\bfseries\sffamily maahir.vohra14@gmail.com | (908)-887-3205 | Hackettstown, NJ}
+\end{center}
+
+\section{Profile}
+\begin{tikzpicture}[overlay, remember picture]
+\fill[primary!20] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+\end{tikzpicture}
+Successful computer science student with experience in full stack development, backend engineering, and project management.
+
+\section{Experience}
+\begin{tikzpicture}[overlay, remember picture]
+\fill[secondary!20] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+\end{tikzpicture}
+
+\subsection{Full Stack Engineer Intern \& Co-op}
+Cambridge Associates, June 2024 - Dec 2024
+
+\begin{itemize}[leftmargin=*, itemsep=0.5em]
+\item Developed backend services in Java Spring Boot and UI components in React/TypeScript for a financial client portal serving 1,300+ users.
+\item Resolved 25+ production issues, improved stability, and shipped 8 new features enhancing performance and scalability.
+\item Participated in sprint planning, code reviews, and QA testing with cross-functional teams in an Agile environment.
+\item Optimized data handling logic with concurrency considerations, emphasizing performance and low-latency responses.
+\end{itemize}
+
+\subsection{Backend Engineer Intern}
+Medtronic, May 2023 - Aug 2023
+
+\begin{itemize}[leftmargin=*, itemsep=0.5em]
+\item Automated clinical data pipelines in Python using SQLAlchemy and error handling, reducing execution time from 20 minutes to seconds.
+\item Created reusable scripts for bulk database operations and integrity checks; visualized metrics via Power BI dashboards.
+\item Validated backend services through unit testing and debugging across Linux environments.
+\item Improved data reliability and efficiency, saving $65,000+ annually.
+\end{itemize}
+
+\section{Skills}
+\begin{tikzpicture}[overlay, remember picture]
+\fill[accent!20] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+\end{tikzpicture}
+
+\begin{itemize}[leftmargin=*, itemsep=0.5em]
+\item Programming languages: Python, Java, C, C++, JavaScript, TypeScript
+\item Databases: SQL, MySQL, Oracle SQL, PostgreSQL
+\item Frameworks: Spring Boot, ReactJS, Flask
+\item Cloud platforms: AWS, GCP
+\item Operating Systems: Linux, Windows, MacOS
+\item Tools: Docker, Power BI, Jira, GitHub
+\item Certifications: Lean Six Sigma - A3 Yellow Belt Certification
+\item Other: Bash, Assembly, TensorFlow, PyTorch, pyodbc, Figma
+\end{itemize}
+
+\section{Education}
+\begin{tikzpicture}[overlay, remember picture]
+\fill[primary!20] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+\end{tikzpicture}
+
+\begin{itemize}[leftmargin=*, itemsep=0.5em]
+\item Bachelor of Science in Computer Science, New Jersey Institute of Technology (NJIT), Fall 2025, GPA: 3.5
+\item Associate of Science in Computer Science, County College of Morris (CCM), Fall 2022
+\end{itemize}
+
+\end{document}

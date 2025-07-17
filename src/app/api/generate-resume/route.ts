@@ -1,6 +1,7 @@
-// app/api/generate-resume/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { db } from '@/lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 // Initialize Groq client
 const groq = new Groq({
@@ -18,14 +19,12 @@ interface JobDescription {
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
     const { jobData, userData, userId }: {
       jobData: JobDescription;
       userData: any;
       userId: string;
     } = await request.json();
 
-    // Validate required data
     if (!jobData || !userData || !userId) {
       return NextResponse.json(
         { error: 'Missing required data: jobData, userData, or userId' },
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare the resume generation prompt for Groq
     const prompt = `Generate a professional resume tailored to the job requirements. Output ONLY the resume content without any introductory text, explanations, or comments.
 
 JOB REQUIREMENTS:
@@ -57,7 +55,6 @@ RESUME FORMAT REQUIREMENTS:
 
 OUTPUT ONLY THE RESUME CONTENT - NO ADDITIONAL TEXT OR COMMENTS.`;
 
-    // Call Groq API to generate the resume
     const completion = await groq.chat.completions.create({
       messages: [
         {
@@ -83,16 +80,14 @@ OUTPUT ONLY THE RESUME CONTENT - NO ADDITIONAL TEXT OR COMMENTS.`;
       );
     }
 
-    // Clean up any remaining unwanted text
     generatedResume = cleanResumeContent(generatedResume);
 
-    // Prepare resume data to return (and potentially store client-side)
     const resumeData = {
       resumeContent: generatedResume,
       jobTitle: jobData.jobTitle,
       companyName: jobData.companyName,
       jobId: jobData.id,
-      jobDesc: jobData.jobDescription, // Add the job description string
+      jobDesc: jobData.jobDescription,
       generatedAt: new Date().toISOString(),
       userId: userId,
       metadata: {
@@ -103,18 +98,26 @@ OUTPUT ONLY THE RESUME CONTENT - NO ADDITIONAL TEXT OR COMMENTS.`;
       }
     };
 
-    // Return success response with resume data
+    // ✅ Save resume to Firestore
+    const docRef = await addDoc(
+      collection(db, 'users', userId, 'userAIResumes'),
+      resumeData
+    );
+
+    // ✅ Attach Firestore ID to response
+    resumeData['resumeId'] = docRef.id;
+
     return NextResponse.json({
       success: true,
       data: resumeData,
-      message: 'Resume generated successfully',
+      message: 'Resume generated and saved successfully',
     });
 
   } catch (error) {
     console.error('Resume Generation Error:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to generate resume',
         message: error instanceof Error ? error.message : 'Unknown error',
       },
@@ -123,9 +126,7 @@ OUTPUT ONLY THE RESUME CONTENT - NO ADDITIONAL TEXT OR COMMENTS.`;
   }
 }
 
-// Helper function to clean up unwanted commentary from the AI response
 function cleanResumeContent(content: string): string {
-  // Remove common AI commentary patterns
   const unwantedPatterns = [
     /^Here is a tailored resume.*?:/i,
     /^Here's a professional resume.*?:/i,
@@ -141,18 +142,14 @@ function cleanResumeContent(content: string): string {
 
   let cleanedContent = content.trim();
 
-  // Remove unwanted introductory text
   for (const pattern of unwantedPatterns) {
     cleanedContent = cleanedContent.replace(pattern, '').trim();
   }
 
-  // Remove any leading/trailing whitespace and normalize line breaks
   cleanedContent = cleanedContent.replace(/^\s+|\s+$/g, '');
-  
   return cleanedContent;
 }
 
-// Handle OPTIONS for CORS if needed
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,
