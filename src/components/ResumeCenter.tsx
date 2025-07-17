@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { auth, firestore } from '../lib/firebase'; // Adjust the import
 import { onAuthStateChanged, User } from 'firebase/auth';
-
-
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-
-
-
 
 
 const ResumeCenter: React.FC = () => {

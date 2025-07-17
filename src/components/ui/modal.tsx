@@ -13,10 +13,14 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg p-6 shadow-xl max-w-md w-full">
+      {/* <div className="bg-white rounded-lg p-6 shadow-xl max-w-md w-full">
+       */}
+       <div className="bg-gray-500 text-black rounded-lg p-6 shadow-xl max-w-md w-full">
+
+
         {title && <h3 className="text-xl font-semibold mb-4">{title}</h3>}
         {children}
-        <button className="mt-4 px-4 py-2 bg-red-500 text-white rounded" onClick={onClose}>
+        <button className="mt-4 px-4 py-2 bg-red-500 text-gray rounded" onClick={onClose}>
           Close
         </button>
       </div>
