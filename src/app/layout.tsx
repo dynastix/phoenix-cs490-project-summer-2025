@@ -45,9 +45,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
         <link rel="canonical" href="https://fouriergauss.com" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+<body className="bg-slate-900 text-white min-h-screen">
+
+
         <AuthProvider>
           <AppThemeProvider>
             <Toaster position="top-right" />
