@@ -6,50 +6,16 @@ import ReorderWorkExperience from "@/components/ReorderWorkExperience";
 import FetchAndDisplayKey from "./FetchAndDisplayKey";
 import SummaryDisplay from "@/components/SummaryDisplay";
 import SummaryEditor from "@/components/SummaryEditor";
-
-
 import CareerBooster from "@/components/CareerBooster";
-
-
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-
-// import JobDescriptionsList from "@/components/JobDescriptionsList";
-// import JobDescriptionUpload from "@/components/JobDescriptionUpload";
-
 import GenerateCard from "@/components/GenerateCard";
-
-// import { useRef } from "react";
 import JobDescUploadAndListPrev from "@/components/JobDescUploadAndListPrev";
-
 import JobApplicationList from "./job-history/JobApplicationList";
-
-
-import ResumeTemplateManager from "./template/ResumeTemplateManager";
-
-
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
-
-
-import { useEffect } from 'react';
-
-import ResumePDFGenerator from "./template/ResumePDFGenerator";
-
-
-
+import ResumeFormatter from "@/components/ResumeFormatter";
 
 export default function GeneratorPageLayout() {
 
   const [activeTab, setActiveTab] = useState("generate");
-
-
-
- const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-
-
-
   const tabLabels: { [key: string]: string } = {
 
     generate: "Generate",
@@ -61,18 +27,6 @@ export default function GeneratorPageLayout() {
 
 
   };
-
-
-  
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
 
   return (
     <div className="w-full max-w mx-auto px-1">
@@ -92,17 +46,14 @@ export default function GeneratorPageLayout() {
         ))}
       </div>
 
-
       {/* Tab Panel Container */}
       <div className="relative min-h-[300px] bg-[#2A2A2E] rounded-b-xl p-2 transition-all duration-300">
-
 
         {activeTab === "jobs" && (
           <div className="animate-fade-in space-y-6 max-w-4xl mx-auto mt-2">
 
             {/*------- Job Description Components: ----------*/}
             <JobDescUploadAndListPrev />
-
 
           </div>
         )}
@@ -115,17 +66,10 @@ export default function GeneratorPageLayout() {
           </div>
         )}
 
-
         {activeTab === "jobHistory" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
-
- 
             {/* Add the job application history component here: */}
-
             <JobApplicationList />
-
-
-
           </div>
         )}
 
@@ -137,21 +81,13 @@ export default function GeneratorPageLayout() {
 
             {/* Add the component for the templating and styling here: */}
 
-           {/* <ResumeTemplateManager user={user} /> */}
-            <ResumePDFGenerator />
-
           </div>
         )}
 
 
-
         {activeTab === "download" && (
           <div className="animate-fade-in w-full max-w mx-auto mt-2">
-
-
-            {/* Add the component for the format and download UI here: */}
-
-
+            <ResumeFormatter />
           </div>
         )}
 

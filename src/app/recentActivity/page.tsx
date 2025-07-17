@@ -44,30 +44,16 @@ export default function HomePage() {
         }
     }, [user, loading, router]);
 
-    if (loading) {
-        return <p>Loading...</p>; // Show a loading state while checking auth
-    }
+  if (loading) {
+    return <p>Loading...</p>; // Show a loading state while checking auth
+  }
 
-    
-
- 
-    return (
-        <div className="flex flex-col items-center">
-         
-
-
-
-
-
-
-
-         <Card className="w-full max-w shadow-lg">
-
-   
-
-                <CardHeader>
-                    {/* <CardTitle>Placeholder: recent activity </CardTitle> */}
-                </CardHeader>
+  return (
+    <div className="flex flex-col items-center">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader>
+          <CardTitle>Recent Activity </CardTitle>
+        </CardHeader>
 
                 <CardContent>
 
